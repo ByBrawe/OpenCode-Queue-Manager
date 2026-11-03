@@ -39,6 +39,7 @@
     "LICENSE"
   ],
   "exports": {
+    ".": "./src/index.mjs",
     "./tui": "./src/tui.ts",
     "./gui-experimental": "./dist/gui-experimental.cjs"
   },

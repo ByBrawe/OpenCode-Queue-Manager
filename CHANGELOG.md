@@ -2,6 +2,9 @@
 
 ## Next patch (automatically published)
 
+- Fixed missing OpenCode v2 root entrypoint: new no-op server plugin at `src/index.mjs` and `exports["."]`; prevents `Plugin entrypoint not found` while keeping Desktop and TUI exports separate.
+- Added package-root contract test and documented why `configured: true` does not guarantee that experimental Desktop GUI loaded.
+
 - Fixed version detection for actual Windows CLI output like `opencode v2.0.22` (previously falsely reported `cliV2: false`).
 - Removed Node.js DEP0190 warning by invoking Windows .cmd shims through explicit `cmd.exe` with `shell: false`, validating fixed arguments before invocation.
 - Updated `doctor` to check both the config file and official `opencode plugin list` output, with a clear suggested installation action.

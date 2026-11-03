@@ -38,3 +38,13 @@ test('automatic npm release workflow is restricted to main and uses OIDC', async
   assert.match(workflow, /npm publish --access public/);
   assert.doesNotMatch(workflow, /NPM_TOKEN|NODE_AUTH_TOKEN/);
 });
+
+test('package root provides a valid OpenCode v2 server plugin entrypoint', async () => {
+  const pkg = JSON.parse(await text('package.json'));
+  assert.equal(pkg.exports['.'], './src/index.mjs');
+  assert.ok((await stat(resolve(root, pkg.exports['.']))).isFile());
+  const { default: definition } = await import(resolve(root, pkg.exports['.']));
+  assert.equal(definition.id, 'bybrawe.queue-manager');
+  assert.equal(typeof definition.setup, 'function');
+});
+
