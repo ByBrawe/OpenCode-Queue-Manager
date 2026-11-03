@@ -1,0 +1,23 @@
+{
+  "name": "opencode-queue-manager-experimental",
+  "version": "0.2.0",
+  "description": "OpenCode v2 Desktop GUI + TUI native queue batch/staging manager",
+  "private": true,
+  "type": "module",
+  "license": "MIT",
+  "exports": {
+    "./tui": "./src/tui.ts",
+    "./gui-experimental": "./dist/gui-experimental.cjs"
+  },
+  "dependencies": {
+    "@opencode/plugin": "latest"
+  },
+  "scripts": {
+    "build": "node scripts/build-gui.mjs",
+    "test": "node --test test/*.test.mjs",
+    "check": "node --check dist/gui-experimental.cjs"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}

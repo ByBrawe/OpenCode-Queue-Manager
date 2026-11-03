@@ -1,0 +1,4 @@
+{
+  "$schema": "https://opencode.ai/cli.json",
+  "plugins": ["/ABSOLUTE/PATH/TO/opencode-queue-manager"]
+}

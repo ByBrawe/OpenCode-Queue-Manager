@@ -1,0 +1,3 @@
+devam et
+testleri calistir ve hata varsa duzelt
+kalan gorevleri sirala
