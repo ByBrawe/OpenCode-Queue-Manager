@@ -176,5 +176,5 @@ test('Windows .cmd invocation avoids shell:true and rejects CMD injection', () =
 test('real npm command shim runs on Windows without shell:true', () => {
   const result = systemRun('npm', ['--version']);
   assert.equal(result.code, 0, result.stderr || result.error || 'npm version check failed');
-  assert.match(result.stdout.trim(), /^\\d+\\.\\d+\\.\\d+/);
+  assert.match(result.stdout.trim(), /^\d+\.\d+\.\d+/);
 });
