@@ -1,6 +1,6 @@
 {
   "name": "@bybrawe/opencode-queue-manager",
-  "version": "0.3.0",
+  "version": "0.3.1",
   "description": "OpenCode queue manager for Desktop & TUI: batch prompts, editable drafts, repeat 100/200 messages, install/uninstall CLI.",
   "type": "module",
   "license": "MIT",
@@ -58,5 +58,5 @@
   "bin": {
     "opencode-queue-manager": "./bin/opencode-queue-manager.mjs"
   },
-  "releaseCommit": "a23e771978d9a36289940dfd35c0a6bb72e18b92"
+  "releaseCommit": "5171db794b90b15e2bf5773a166aec97b1f73ddb"
 }
