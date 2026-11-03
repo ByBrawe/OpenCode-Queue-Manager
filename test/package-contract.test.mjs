@@ -27,6 +27,14 @@ test('distributed GUI bundle is generated from the committed source', async () =
   assert.equal(await text('dist/gui-experimental.cjs'), await text('src/gui-experimental.cjs'));
 });
 
-test('npm publishing is manual: no npm publish workflow exists', async () => {
-  await assert.rejects(stat(resolve(root, '.github/workflows/publish-npm.yml')), { code: 'ENOENT' });
+test('automatic npm release workflow is restricted to main and uses OIDC', async () => {
+  const workflow = await text('.github/workflows/publish-npm.yml');
+  assert.match(workflow, /push:\s*\n\s*branches: \[main\]/);
+  assert.match(workflow, /id-token: write/);
+  assert.match(workflow, /environment: npm/);
+  assert.match(workflow, /node-version: "24"/);
+  assert.match(workflow, /node scripts\/prepare-npm-release\.mjs/);
+  assert.match(workflow, /npm run verify/);
+  assert.match(workflow, /npm publish --access public/);
+  assert.doesNotMatch(workflow, /NPM_TOKEN|NODE_AUTH_TOKEN/);
 });

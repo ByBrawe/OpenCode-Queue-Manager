@@ -1,13 +1,13 @@
 # Changelog
 
-## 0.3.0 (unreleased in source)
+## 0.3.0 (source, automated npm publishing enabled)
 
 - Added a cross-platform CLI (`opencode-queue-manager`) to install, inspect, update and uninstall the plugin.
 - Added an explicit opt-in installer/uninstaller for the official npm-distributed OpenCode v2 CLI (`install-opencode` / `uninstall-opencode --yes`); does not affect the Desktop app.
 - Added Desktop-only configuration fallback with JSONC-safe changes, preservation of other plugins, and timestamped backups.
 - Introduced a supported-host registry for future adapters while documenting that DeepSeek and other LLMs are model providers.
 - Added bilingual documentation, more examples, safety notes, an optional SEO-friendly GitHub Pages site, and release instructions.
-- **Removed GitHub npm publication workflow.** CI still runs tests; npm releases must be performed deliberately by the maintainer.
+- **Enabled automatic npm publishing:** the main-branch OIDC workflow verifies builds and tests, checks the npm registry, assigns a non-duplicate release version and publishes without npm tokens or manual commands.
 - No real OpenCode Desktop app integration testing is claimed.
 
 ## 0.2.1

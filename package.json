@@ -47,8 +47,8 @@
   },
   "scripts": {
     "build": "node scripts/build-gui.mjs",
-    "check": "node --check dist/gui-experimental.cjs && node --check src/queue-core.mjs && node --check src/installer/jsonc-config.mjs && node --check src/installer/cli.mjs && node --check bin/opencode-queue-manager.mjs",
-    "test": "node --test test/*.test.mjs",
+    "check": "node --check dist/gui-experimental.cjs && node --check src/queue-core.mjs && node --check src/installer/jsonc-config.mjs && node --check src/installer/cli.mjs && node --check bin/opencode-queue-manager.mjs && node --check scripts/prepare-npm-release.mjs && node --check src/release/version.mjs",
+    "test": "node --test",
     "verify": "npm run build && npm run check && npm test",
     "prepack": "npm run verify"
   },

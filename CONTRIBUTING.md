@@ -20,4 +20,4 @@ Attach official API documentation for new coding-app host integrations. See [ada
 
 ## Release policy
 
-GitHub CI **does not publish** npm releases. Releases are manual and maintainer-only. See [release checklist](docs/en/releasing.md). MIT license applies.
+Merging relevant code changes to the main branch **automatically publishes** npm releases through GitHub Actions Trusted Publishing (OIDC), after successful tests. Do not commit changes without review: a merge can trigger a public release. See [release procedure](docs/en/releasing.md). MIT license applies.

@@ -83,3 +83,9 @@ DeepSeek, OpenAI, Anthropic, OpenRouter vb. **model sağlayıcılarıdır**. Ope
 **Google'da nasıl görünür?** `docs/` klasörünü GitHub Pages ile yayımlayıp Google Search Console üzerinden site haritası gönderin. Google'da sıralama garantisi yoktur.
 
 İngilizce ana rehber: [README](../../README.md) · [Gelişmiş kurulum](../en/installation.md) · [Örnekler](../en/examples.md).
+
+## npm otomatik yayini
+
+GitHub'da `main` dalina kod eklendiginde testler ve paket kontrolu calisir; surum npm'deki son surumle cakisirsa patch surumu kendiliginden artirilip OIDC ile npm'e yayimlanir. Manuel `npm login`, `npm version` veya `npm publish` gerekmez. GitHub Environment `npm` koruma kurallari onay gerektiriyorsa yayin bu onayi bekler.
+
+**npm'e yayinlamak, kullanicinin cihazindaki eklentiyi kendiliginden yenilemez.** OpenCode v2 yeni surumleri kontrol eder, ancak yuklemeyi garanti etmez. Kullanici `opencode plugin update @bybrawe/opencode-queue-manager` komutuyla surumu guncelleyebilir. [Surum dokumani](../en/releasing.md).
