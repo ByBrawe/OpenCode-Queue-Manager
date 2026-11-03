@@ -40,8 +40,8 @@ test('missing plugins property is inserted without breaking JSONC', () => {
 });
 
 test('global config path honors XDG and defaults to user config', () => {
-  assert.equal(defaultConfigPath({ home: '/home/test', env: {} }), '/home/test/.config/opencode/opencode.jsonc');
-  assert.equal(defaultConfigPath({ home: '/home/test', env: { XDG_CONFIG_HOME: '/else' } }), '/else/opencode/opencode.jsonc');
+  assert.equal(defaultConfigPath({ home: '/home/test', env: {} }), join('/home/test', '.config', 'opencode', 'opencode.jsonc'));
+  assert.equal(defaultConfigPath({ home: '/home/test', env: { XDG_CONFIG_HOME: '/else' } }), join('/else', 'opencode', 'opencode.jsonc'));
 });
 
 test('config mutation creates backup, supports dry-run, and does not overwrite other plugins', async (t) => {
