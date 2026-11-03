@@ -1,0 +1,5 @@
+Check the current working directory and identify the repository root.
+Run the project's unit tests and summarize failures.
+Fix the highest-impact failure with minimal changes.
+Rerun tests and record any remaining issues.
+Update documentation for the changes made.

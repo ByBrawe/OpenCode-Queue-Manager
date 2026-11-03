@@ -1,0 +1,88 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="dark light">
+  <title>OpenCode Queue Manager | Batch Prompts, Desktop & TUI</title>
+  <meta name="description" content="Open-source queue manager plugin for OpenCode v2 Desktop and TUI. Stage and edit 100/200 prompts, reorder task lists, and manage native AI coding agent queues.">
+  <meta name="robots" content="index, follow">
+  <link rel="canonical" href="https://bybrawe.github.io/OpenCode-Queue-Manager/">
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="OpenCode Queue Manager — Open-source batch prompts">
+  <meta property="og:description" content="Create, edit, reorder and send prompt batches to OpenCode v2 Desktop & TUI. Free MIT-licensed source code and installer CLI.">
+  <meta property="og:url" content="https://bybrawe.github.io/OpenCode-Queue-Manager/">
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:title" content="OpenCode Queue Manager">
+  <meta name="twitter:description" content="Desktop & TUI prompt queue management for OpenCode v2 — edit and batch 100/200 prompts before sending.">
+  <style>
+    :root { color-scheme: dark; font-family: system-ui, -apple-system, Segoe UI, sans-serif; }
+    * { box-sizing: border-box; }
+    body { margin: 0; background: #10131a; color: #ecf0f8; line-height: 1.65; }
+    a { color: #a5c7ff; text-underline-offset: .2em; }
+    .container { width: min(1060px, 92%); margin: auto; }
+    header { padding: 1.5rem 0; border-bottom: 1px solid #303849; }
+    header .container, nav { display: flex; flex-wrap: wrap; gap: 1rem; align-items: center; justify-content: space-between; }
+    .brand { font-weight: 780; font-size: 1.08rem; text-decoration: none; color: #ecf0f8; }
+    nav a { font-size: .94rem; }
+    main { padding: 4.5rem 0; }
+    .eyebrow { text-transform: uppercase; letter-spacing: .16em; font-size: .75rem; color: #adc6f5; font-weight: 730; }
+    h1 { max-width: 760px; font-size: clamp(2.2rem,5.2vw,4.3rem); line-height: 1.1; letter-spacing: -.045em; }
+    h2 { font-size: clamp(1.3rem, 2.6vw, 2rem); margin-top: 3rem; }
+    p.lead { max-width: 720px; font-size: 1.15rem; color: #c8d0dd; }
+    .actions { display: flex; flex-wrap: wrap; gap: .75rem; margin: 2rem 0; }
+    .button { padding: .75rem 1.1rem; background: #3268b4; border-radius: .6rem; color: white; text-decoration: none; font-weight: 660; }
+    .button.secondary { background: #242e42; }
+    .cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); gap: 1rem; }
+    .card { background: #1b2331; padding: 1.15rem; border-radius: .8rem; border: 1px solid #354057; }
+    .card h3 { margin: 0 0 .35rem; }
+    .card p { margin: 0; color: #c8d0dd; }
+    pre { background: #161f2d; padding: 1.1rem; overflow: auto; border-radius: .65rem; border: 1px solid #354057; }
+    .note { border-left: 3px solid #8db7ec; padding-left: 1rem; color: #cbd6e9; }
+    footer { padding: 2.5rem 0; color: #aeb8c8; border-top: 1px solid #303849; }
+  </style>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "SoftwareSourceCode",
+    "name": "OpenCode Queue Manager",
+    "description": "Open-source OpenCode v2 Desktop and TUI plugin for staging, organizing and sending AI coding agent prompt queues.",
+    "codeRepository": "https://github.com/ByBrawe/OpenCode-Queue-Manager",
+    "url": "https://bybrawe.github.io/OpenCode-Queue-Manager/",
+    "programmingLanguage": ["JavaScript", "TypeScript"],
+    "license": "https://github.com/ByBrawe/OpenCode-Queue-Manager/blob/main/LICENSE",
+    "author": { "@type": "Person", "name": "ByBrawe" },
+    "runtimePlatform": "OpenCode v2 Desktop and TUI",
+    "isAccessibleForFree": true
+  }
+  </script>
+</head>
+<body>
+<header><div class="container"><a class="brand" href="./">OpenCode Queue Manager</a><nav><a href="#features">Features</a><a href="#install">Install</a><a href="https://github.com/ByBrawe/OpenCode-Queue-Manager">GitHub</a><a href="https://www.npmjs.com/package/@bybrawe/opencode-queue-manager">npm</a></nav></div></header>
+<main class="container">
+  <p class="eyebrow">Open source · Desktop + Terminal · MIT</p>
+  <h1>Turn a long list of prompts into a manageable OpenCode queue.</h1>
+  <p class="lead">Stage <strong>100 or 200</strong> “continue” prompts, import task lists, rearrange drafts, and send them to the native queue only when you're ready. Built for OpenCode v2 Desktop & TUI.</p>
+  <div class="actions"><a class="button" href="https://github.com/ByBrawe/OpenCode-Queue-Manager#installation">Installation guide</a><a class="button secondary" href="https://github.com/ByBrawe/OpenCode-Queue-Manager/blob/main/docs/tr/README.md">Türkçe rehber</a></div>
+  <section id="features" aria-labelledby="features-title">
+    <h2 id="features-title">Review before you queue</h2>
+    <div class="cards">
+      <article class="card"><h3>Batch prompts</h3><p>10, 25, 50, 100, 200 or a custom count. Import line-separated TXT files as staged messages.</p></article>
+      <article class="card"><h3>Edit & order</h3><p>Search, select, edit, duplicate, delete, sort and rearrange drafts before sending.</p></article>
+      <article class="card"><h3>Native queue</h3><p>Send prompts to OpenCode’s native inbox and cancel pending items that have not started.</p></article>
+      <article class="card"><h3>Install / uninstall</h3><p>Manage the plugin with the OpenCode CLI or the optional v0.3 source installer with safe config backups.</p></article>
+    </div>
+  </section>
+  <section id="install" aria-labelledby="install-title">
+    <h2 id="install-title">Install from npm</h2>
+    <p>OpenCode v2 has a built-in plugin manager. Install the latest published release with:</p>
+    <pre><code>opencode plugin add @bybrawe/opencode-queue-manager</code></pre>
+    <p>After installation, restart OpenCode and look for the Queue Manager command (<code>/qm</code>). The v0.3 installer CLI is available from source; npm must be manually updated before it becomes usable with <code>npx</code>.</p>
+    <h2>Model provider independent</h2>
+    <p>Use your existing OpenCode-selected model, including supported DeepSeek, OpenAI, or Anthropic models. This is not a separate DeepSeek application plugin.</p>
+    <p class="note"><strong>Experimental:</strong> actual OpenCode Desktop compatibility remains unverified. Large message queues may incur model charges. Sorting and editing apply to drafts, not to already-running prompts.</p>
+  </section>
+</main>
+<footer><div class="container">MIT license · Independent community project. Not affiliated with OpenCode. <a href="https://github.com/ByBrawe/OpenCode-Queue-Manager/issues">Report an issue</a>.</div></footer>
+</body>
+</html>
