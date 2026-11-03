@@ -1,0 +1,64 @@
+name: Publish npm (automatic)
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "src/**"
+      - "bin/**"
+      - "dist/**"
+      - "scripts/**"
+      - "package.json"
+      - "README.md"
+      - "LICENSE"
+      - ".github/workflows/publish-npm.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  id-token: write
+
+concurrency:
+  group: opencode-queue-manager-npm-release
+  cancel-in-progress: false
+
+jobs:
+  publish:
+    name: Test, version, publish to npm
+    if: github.repository == 'ByBrawe/OpenCode-Queue-Manager' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    environment: npm
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: true
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+          registry-url: "https://registry.npmjs.org"
+          package-manager-cache: false
+      - name: Install dependencies
+        run: npm install --ignore-scripts --no-audit --no-fund
+      - name: Build and test
+        run: npm run verify
+      - name: Determine npm version (no duplicate commit publishes)
+        id: prepare
+        run: node scripts/prepare-npm-release.mjs
+      - name: Check tarball
+        if: steps.prepare.outputs.publish == 'true'
+        run: npm pack --dry-run --ignore-scripts
+      - name: Publish with npm Trusted Publishing (OIDC)
+        if: steps.prepare.outputs.publish == 'true'
+        run: npm publish --access public
+      # Keep repository manifest aligned with npm when branch rules allow.
+      # A failed sync never hides a successful npm publication.
+      - name: Sync published version to main
+        if: steps.prepare.outputs.publish == 'true'
+        continue-on-error: true
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add package.json
+          if git diff --cached --quiet; then exit 0; fi
+          git commit -m "chore(release): sync published package version [skip ci]"
+          git push origin HEAD:main

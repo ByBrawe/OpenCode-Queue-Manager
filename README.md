@@ -6,7 +6,7 @@
 
 [**Türkçe rehber**](docs/tr/README.md) · [Installation](#installation) · [Examples](#examples) · [FAQ](#faq) · [Roadmap](#other-platforms-and-model-providers)
 
-> **Experimental:** OpenCode v2's Desktop GUI plugin SDK changes between releases. Automated mock tests pass, but actual OpenCode Desktop/TUI compatibility still requires testing. The installer is new in source version 0.3.0 and is **not available from npm until 0.3.0 is manually published**. Published versions are listed at [npm](https://www.npmjs.com/package/@bybrawe/opencode-queue-manager).
+> **Experimental:** OpenCode v2's Desktop GUI plugin SDK changes between releases. Automated mock tests pass, but actual OpenCode Desktop/TUI compatibility still requires testing. The installer is included in source v0.3.0 and becomes available on npm after the automatic release workflow successfully publishes v0.3.0 (or later). Published versions are listed at [npm](https://www.npmjs.com/package/@bybrawe/opencode-queue-manager).
 
 ## Highlights
 
@@ -149,7 +149,7 @@ node bin/opencode-queue-manager.mjs doctor
 
 The `prepack` hook builds and tests the bundle. The npm package contains the two OpenCode plugin entries and the standalone installer binary. Read [CONTRIBUTING](CONTRIBUTING.md) and [platform adapters](docs/en/platform-adapters.md) before contributing.
 
-**Publishing is manual only.** GitHub Actions runs checks on PRs and pushes, but never publishes to npm. Maintainers must intentionally run `npm publish --access public` after verifying a new version and testing in a real OpenCode installation. See [release checklist](docs/en/releasing.md).
+**npm publishing is automatic.** A merge to `main` runs [the release workflow](.github/workflows/publish-npm.yml): build/tests, npm registry version check, automatic patch version increase when needed, then tokenless npm Trusted Publishing (OIDC). No local `npm login`, `npm version`, or `npm publish` command is required. Keep GitHub Environment `npm` and the npm Trusted Publisher configured for `publish-npm.yml` with `npm publish` permission. A rerun of the same Git commit is skipped. See [release details](docs/en/releasing.md).
 
 ## FAQ
 
