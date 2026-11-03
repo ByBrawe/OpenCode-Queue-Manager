@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFile, stat } from 'node:fs/promises';
-import { fileURLToPath } from 'node:url';
+import { fileURLToPath, pathToFileURL } from 'node:url';
 import { resolve, dirname } from 'node:path';
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
@@ -38,3 +38,13 @@ test('automatic npm release workflow is restricted to main and uses OIDC', async
   assert.match(workflow, /npm publish --access public/);
   assert.doesNotMatch(workflow, /NPM_TOKEN|NODE_AUTH_TOKEN/);
 });
+
+test('package root provides a valid OpenCode v2 server plugin entrypoint', async () => {
+  const pkg = JSON.parse(await text('package.json'));
+  assert.equal(pkg.exports['.'], './src/index.mjs');
+  assert.ok((await stat(resolve(root, pkg.exports['.']))).isFile());
+  const { default: definition } = await import(pathToFileURL(resolve(root, pkg.exports['.'])).href);
+  assert.equal(definition.id, 'bybrawe.queue-manager');
+  assert.equal(typeof definition.setup, 'function');
+});
+

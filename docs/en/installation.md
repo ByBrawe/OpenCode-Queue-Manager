@@ -82,3 +82,26 @@ No updater can guarantee compatibility with an experimental host SDK. Test with 
 - Config-only removal: `npx @bybrawe/opencode-queue-manager uninstall --method config`.
 - Restore settings from the timestamped backup if needed; carefully compare changes first.
 - Do not delete OpenCode's entire configuration directory just to remove Queue Manager.
+
+
+## Server entrypoint / Desktop background errors
+
+The npm package includes three separate OpenCode v2 exports: the root `.`
+server definition (`src/index.mjs`), the `./tui` entry, and the experimental
+`./gui-experimental` entry. The root has a no-op setup and is required for
+OpenCode to resolve the package as a normal plugin. The older npm v0.3.1
+package lacked this root export and could log
+`Plugin entrypoint not found: @bybrawe/opencode-queue-manager`.
+After updating this package, use `opencode plugin update @bybrawe/opencode-queue-manager`
+(or remove and reinstall it) so OpenCode loads the new package version.
+
+`doctor` checks configuration and/or registration via `plugin list`;
+its `configured` flag is **not** proof that the plugin loaded successfully
+or that Desktop's experimental GUI is compatible with the host.
+
+If Desktop reports `Background service failed to start`, inspect the
+OpenCode log first. A separate `SQLiteError: disk I/O error` while booting
+the background service is a host database/locked-process issue, not a
+Queue Manager plugin load error. Stop or restart the stuck OpenCode service
+before touching any database files. Never delete `opencode.db`, `-wal` or
+`-shm` without a verified full backup of the entire database set.
