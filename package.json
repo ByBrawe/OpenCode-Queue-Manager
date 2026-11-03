@@ -57,5 +57,6 @@
   },
   "bin": {
     "opencode-queue-manager": "./bin/opencode-queue-manager.mjs"
-  }
+  },
+  "releaseCommit": "a23e771978d9a36289940dfd35c0a6bb72e18b92"
 }
