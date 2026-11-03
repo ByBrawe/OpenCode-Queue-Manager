@@ -1,13 +1,23 @@
-# Contributing
+# Contributing to OpenCode Queue Manager
 
-Contributions and bug reports are welcome at https://github.com/ByBrawe/OpenCode-Queue-Manager.
+Thanks for contributing! Please keep changes small, testable and safe for existing OpenCode users.
 
-- Install OpenCode v2 and reproduce any GUI failures with a temporary test session.
-- Run `npm run verify && npm pack --dry-run` before proposing changes.
-- The experimental GUI SDK may change; include the OpenCode version and operating system in bug reports.
-- Never claim a GUI integration is verified unless tested inside OpenCode Desktop.
-- Do not silently move, edit, or delete already admitted native queue messages. The official v2 API does not support atomic reorder/text edits.
-- Keep the GUI bundle self-contained; no untrusted external URL scripts, CDN resources or telemetry.
-- Keep changes under the MIT license and include a test where possible.
+## Development
 
-Publishing on npm is a maintainer-only operation. Check the version, package contents and npm scope permissions first; see the release checklist in README.
+```sh
+npm install
+npm run verify
+npm pack --dry-run
+```
+
+OpenCode v2 GUI integrations are experimental and should be tested in an actual Desktop app before making stability claims. Automated tests mock OpenCode sessions and UI contracts.
+
+For install/uninstall changes, cover Windows paths, macOS/Linux XDG paths, malformed JSONC, other plugin entries, backups, dry-run, CLI present/absent and explicit consent for global npm operations.
+
+## Feature requests
+
+Attach official API documentation for new coding-app host integrations. See [adapter contract](docs/en/platform-adapters.md). DeepSeek and other model providers are accessed through OpenCode; do not confuse them with new application hosts. Never request API keys or add telemetry without explicit review.
+
+## Release policy
+
+GitHub CI **does not publish** npm releases. Releases are manual and maintainer-only. See [release checklist](docs/en/releasing.md). MIT license applies.

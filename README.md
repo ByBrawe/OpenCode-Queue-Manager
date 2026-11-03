@@ -1,14 +1,80 @@
-# OpenCode Queue Manager — Desktop + TUI (experimental v0.2.1)
+# OpenCode Queue Manager — Batch prompts for Desktop & TUI
 
-**Open-source, MIT-licensed OpenCode v2 plugin** for creating and organizing hundreds of native-queue prompts without keyboard macros. It supports OpenCode **Desktop GUI (Windows/macOS/Linux)** and **TUI** from one local package.
+**Build a queue of 100–200 (or custom-count) prompts, edit and reorder them before sending, then manage OpenCode's native message queue.** Open-source, MIT-licensed extension for **OpenCode v2 Desktop and TUI**.
 
-> **Experimental, not production-verified.** The v2 GUI plugin SDK is experimental, and this environment does not have OpenCode Desktop/TUI installed. We verified JavaScript syntax, static plugin registration and mocked client/GUI flows, not real in-app activation. Source: [ByBrawe/OpenCode-Queue-Manager](https://github.com/ByBrawe/OpenCode-Queue-Manager). npm publication is a separate maintainer action; do not assume the package is already live.
+[![npm](https://img.shields.io/npm/v/%40bybrawe%2Fopencode-queue-manager?label=npm)](https://www.npmjs.com/package/@bybrawe/opencode-queue-manager) [![CI](https://github.com/ByBrawe/OpenCode-Queue-Manager/actions/workflows/ci.yml/badge.svg)](https://github.com/ByBrawe/OpenCode-Queue-Manager/actions/workflows/ci.yml) [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 
-## Install from npm (after first publication)
+[**Türkçe rehber**](docs/tr/README.md) · [Installation](#installation) · [Examples](#examples) · [FAQ](#faq) · [Roadmap](#other-platforms-and-model-providers)
 
-Package name: **`@bybrawe/opencode-queue-manager`**. OpenCode v2 installs configured npm plugins itself; you do **not** need a global `npm install` for normal use.
+> **Experimental:** OpenCode v2's Desktop GUI plugin SDK changes between releases. Automated mock tests pass, but actual OpenCode Desktop/TUI compatibility still requires testing. The installer is new in source version 0.3.0 and is **not available from npm until 0.3.0 is manually published**. Published versions are listed at [npm](https://www.npmjs.com/package/@bybrawe/opencode-queue-manager).
 
-For **Desktop**, add this entry to your global `~/.config/opencode/opencode.jsonc` (Windows: `%USERPROFILE%\.config\opencode\opencode.jsonc`), merging it with your existing settings:
+## Highlights
+
+| Feature | Desktop GUI | TUI |
+| --- | --- | --- |
+| Repeat a prompt 10 / 25 / 50 / 100 / 200 / custom (1–500) times | Yes | Yes |
+| Paste a newline-separated task list or import `.txt` | Yes | Yes |
+| Save drafts per session before submitting | Yes | Yes (separate store) |
+| Edit, delete, duplicate, reorder and sort drafts | Yes | Yes |
+| Search and multi-select drafts | Yes | Via terminal menus (limited) |
+| Send to native OpenCode queue | Yes | Yes |
+| Inspect/remove queued pending prompts | Yes | Yes |
+| Install/uninstall CLI helper (Windows/macOS/Linux) | Terminal helper | Terminal helper |
+
+Publishing drafts to OpenCode **starts real model work and may incur usage charges**. The word “publish” in the UI means *send to the OpenCode message queue*, not publish this package to npm. Editing/reordering applies to drafts, not already queued messages.
+
+## Installation
+
+### Fastest: official OpenCode v2 CLI
+
+OpenCode v2 has a built-in plugin manager. You can install the current **published** package directly:
+
+```sh
+opencode plugin add @bybrawe/opencode-queue-manager
+opencode plugin list
+```
+
+Restart OpenCode Desktop or TUI and open a session; use `/qm` or search the command palette for **Queue Manager**. A GUI plugin is loaded in Desktop only if the current OpenCode v2 Desktop app supports its experimental `./gui-experimental` export. [Official plugin reference](https://opencode.ai/v2/docs/plugins).
+
+### One-command installer (v0.3.0 once released)
+
+Our installer recognizes the OpenCode CLI. If it's missing, it can edit only the user's Desktop/server `opencode.jsonc` as a fallback. It preserves unrelated settings and creates a timestamped backup for changes.
+
+```sh
+npx @bybrawe/opencode-queue-manager install
+npx @bybrawe/opencode-queue-manager doctor
+npx @bybrawe/opencode-queue-manager update
+npx @bybrawe/opencode-queue-manager uninstall
+```
+
+**Note:** `npx` runs the currently published release, which may not yet include these commands. For the unreleased source version use `node bin/opencode-queue-manager.mjs install` from a Git checkout.
+
+For Desktop-only installations with no `opencode` command on `PATH`:
+
+```sh
+npx @bybrawe/opencode-queue-manager install --method config
+npx @bybrawe/opencode-queue-manager uninstall --method config
+```
+
+For a **dry run** before writing anything:
+
+```sh
+npx @bybrawe/opencode-queue-manager install --dry-run
+npx @bybrawe/opencode-queue-manager doctor --json
+```
+
+The CLI helper can also install the **official OpenCode v2 CLI** via npm; these operations require a separate explicit `--yes` flag and do **not** install/uninstall the Desktop app:
+
+```sh
+npx @bybrawe/opencode-queue-manager install-opencode --yes
+npx @bybrawe/opencode-queue-manager uninstall-opencode --yes
+```
+
+`uninstall-opencode` refuses to remove an OpenCode CLI installed by a different package manager. To install the **Desktop application**, use [OpenCode's official download page](https://opencode.ai/download). [Full install, upgrade, uninstall, backup and troubleshooting guide](docs/en/installation.md).
+
+### Configure manually
+
+Add the package to your **global** `~/.config/opencode/opencode.jsonc` (Windows: `%USERPROFILE%\.config\opencode\opencode.jsonc`) without overwriting existing options:
 
 ```jsonc
 {
@@ -17,125 +83,93 @@ For **Desktop**, add this entry to your global `~/.config/opencode/opencode.json
 }
 ```
 
-For the **TUI**, add the package in `cli.json`:
+OpenCode Desktop reads the global `opencode.json(c)`. TUI also loads active packages from the server; use `cli.json` only for TUI-local plugins. Avoid configuring both unnecessarily. See [OpenCode plugin docs](https://opencode.ai/v2/docs/cli/plugins).
 
-```json
-{
-  "plugins": ["@bybrawe/opencode-queue-manager"]
-}
-```
+## Quick start
 
-Restart OpenCode, open a session and run `/qm` (or use the command palette). On Desktop, the Queue Manager opens in a side panel. **Desktop is supported only on OpenCode v2 with the experimental GUI SDK.** Test with 2–3 messages before using larger batches.
+1. Install the plugin and restart OpenCode v2.
+2. Open a session and choose **Queue Manager** (`/qm`).
+3. Enter `devam et` (or any custom prompt), select **100**, **200** or a custom count.
+4. Review the numbered **draft list**. Search, sort, move, edit or delete unwanted entries.
+5. Confirm **Send to native queue**. Start with 2–3 messages to verify the host integration.
+6. Review **native pending queue** to cancel entries that have not started yet.
 
-> Until the maintainer publishes the package on npm, use the local-directory installation below. Package name availability and publication cannot be guaranteed by the source repository alone.
+## Examples
 
-## Local Desktop installation (Windows) — without npm
-
-1. Extract the ZIP so the project folder is, for example, `C:\tools\opencode-queue-manager` (check that `package.json` is inside this folder).
-2. Open the **OpenCode v2** global config. Press `Win + R`, enter `%USERPROFILE%\.config\opencode`, and open/create `opencode.jsonc`.
-3. Merge the `plugins` entry below into your existing JSONC configuration; **do not overwrite** other settings:
-
-   ```jsonc
-   {
-     "$schema": "https://opencode.ai/config.json",
-     "plugins": ["C:/tools/opencode-queue-manager"]
-   }
-   ```
-
-   For a different extraction location, update the path. Use `/` in the Windows JSONC string.
-4. Completely close and restart OpenCode Desktop (or reload its plugin from **Settings → Extensions → Plugins**). Make sure you are using the Desktop app's own server, not an external/remote server.
-5. Open a **session**, then use the command palette to run **Queue Manager panelini aç** or type `/qm` in the command interface. Its panel appears in the session's **side region** and can be dragged to the bottom region.
-6. **Test with 2–3 messages** before using 100/200 presets. The plugin sends native user prompts, potentially incurring model costs.
-
-The GUI bundle is already present at `dist/gui-experimental.cjs`. No manual `npm install` or build is needed just to try the package in OpenCode v2.
-
-### Desktop interface
-
-- **Repeat** 10 / 25 / 50 / 100 / 200 / custom **1–500** copies of any text (default: `devam et`).
-- **Paste a vertical message list**, one message per line, or choose a local `.txt` file. Up to 1000 messages per import, 2000 total staged drafts/session.
-- **Persistent session-scoped drafts**: separate from the native inbox, stored with OpenCode's GUI storage API.
-- **List + search**: filter case-insensitively, 75 rows/page.
-- **Manage drafts**: edit text, duplicate, move up/down/to top/to bottom, sort A–Z/Z–A, reverse, multi-select and delete, clear all.
-- **Publish** sequentially to the native OpenCode session inbox with `delivery: "queue"`. Confirmation required; successful prompts are removed from drafts. A failure stops publication and leaves the unsubmitted drafts.
-- **Native queue view**: refresh, view pending items and their delivery type, select/cancel queued user prompts or cancel all queued user prompts. Does **not** interrupt already-running execution.
-- Automatically refreshes native pending items every 6 seconds while its native queue view is active.
-
-### Desktop-specific limitations
-
-- The GUI SDK, especially its internal module loader and panel API, is experimental. This package uses one **prebuilt, hand-written CommonJS** file importing only documented Desktop host-provided shared modules (`@opencode/plugin/gui`, `effect`, `solid-js`). The official recommended compiler is the Vite GUI preset; real Desktop compatibility still must be checked with your installed OpenCode version.
-- **Sorting/editing affects drafts only.** The official native API does not offer atomic reordering or text-editing of already enqueued items. You can cancel pending items but not edit or reorder them in place.
-- The GUI plugin is available only on **OpenCode v2**; it does **not** modify OpenCode v1 Desktop or overwrite OpenCode's built-in composer queue UI.
-- Drafts staged in TUI and Desktop are currently held in their own plugin storage, not synchronized; **both** can publish to and inspect the same native inbox when connected to the same session/server.
-- No exactly-once guarantee across app crashes: if the API accepts a message but the local draft checkpoint does not persist, retrying may duplicate that message.
-- Multiple windows editing the same session's drafts concurrently are not coordinated.
-
-## Local TUI installation
-
-The same folder exports a TUI plugin, `./tui`. If your v2 CLI isn't picking up plugins from the global config above, add this to your v2 global `cli.json`:
-
-```json
-{
-  "plugins": ["C:/tools/opencode-queue-manager"]
-}
-```
-
-Restart OpenCode TUI and use `/qm` or the command palette. The terminal plugin uses the official select/prompt/confirm dialogs, and supports repeating, TXT import, numbered list management, edit/move/sort/delete, native queue publishing, and pending-item cancellations.
-
-For macOS and Linux, replace `C:/tools/...` with the absolute path to the extracted directory.
-
-## Safety & behavior
-
-**Queueing 200 prompts does not hold them for manual execution.** OpenCode may start draining them immediately. Each message can call the model and incur charges. Canceling a pending message does not stop a request that already started. Fix errors like `Wrong workdir` **before** repeating `devam et` 100 times.
-
-Plugin data never leaves OpenCode except when you explicitly **Publish** to its own native inbox. All GUI code lives in `src/gui-experimental.cjs`; there are no network/CDN imports, telemetry or shell execution in the GUI part.
-
-## Build / test
-
-Requires Node.js 20+ for the included automated tests (not required just to run the packaged plugin):
-
-```sh
-npm run verify
-npm pack --dry-run
-```
-
-`npm run build` copies the already self-contained CJS source to `dist/`; no external bundle download is necessary. `npm test` uses a mocked GUI host and fake inbox to verify registration, 100-message submission, failure checkpointing, import limits and pure list operations. A package-contract test checks npm metadata and that the distribution bundle matches the source.
-
-## npm release checklist (maintainers)
-
-1. Verify `package.json` name/version and that you own the `@bybrawe` scope on npm. Check the exact name is available. Every npm publish needs a **new version**.
-2. Run `npm run verify` and `npm pack --dry-run`. Check that only `src/`, `dist/`, `README.md`, `LICENSE` and npm metadata are included.
-3. **Manual local publish:** `npm login` then `npm publish --access public` from the project root. The `prepack` script runs the build and tests again.
-4. **Optional GitHub Actions publish:** configure npm **Trusted Publishing** for repository `ByBrawe/OpenCode-Queue-Manager` and workflow `.github/workflows/publish-npm.yml`. Create a GitHub environment named `npm` (optionally with manual approval), then trigger **Publish npm (manual)**. This workflow cannot publish until the npm trust relationship is configured.
-5. Verify `npm view @bybrawe/opencode-queue-manager version` and test installation on a real OpenCode v2 Desktop and TUI environment before describing the plugin as production-ready.
-
-The package is experimental. CI tests and `npm pack` verify the distribution, but do **not** establish compatibility with a real running OpenCode Desktop installation.
-
-## Source layout
+**Repeat an instruction 100 times**
 
 ```text
-opencode-queue-manager/
-  package.json
-  src/gui-experimental.cjs     # Desktop GUI source (standalone CommonJS)
-  dist/gui-experimental.cjs    # Desktop GUI load target
-  src/tui.ts                   # TUI entry
-  src/queue-core.mjs           # TUI list/publish helpers
-  test/gui-contract.test.mjs   # Desktop mocked integration tests
-  test/package-contract.test.mjs # npm publication checks
-  test/queue-core.test.mjs     # Pure queue tests
-  scripts/build-gui.mjs
-  .github/workflows/ci.yml
-  .github/workflows/publish-npm.yml
-  examples/
-  LICENSE
+Prompt: devam et
+Count: 100
+Drafts: 100 numbered entries
+Action: Review -> Send to native queue
 ```
 
-## References
+**Work from a task list** — save the following as `tasks.txt`, then paste or import it:
 
-- OpenCode v2 plugins: https://opencode.ai/v2/docs/build/plugins/
-- OpenCode v2 GUI SDK: https://opencode.ai/v2/docs/build/plugins/gui
-- OpenCode v2 native queue: https://opencode.ai/v2/docs/api
-- Community alternative: https://github.com/mirsella/opencode-queue
+```text
+Check all failing tests and summarize root causes.
+Fix TypeScript errors without changing public APIs.
+Run lint, formatting and unit tests.
+Document the remaining blockers and stop when complete.
+```
+
+**Recover from a wrong working directory** — fix the root path first; repeating an error 200 times will not solve it.
+
+**Edit a staged task** — select an entry, update its text and move it before other entries; only then submit the queue.
+
+Examples: [`examples/messages.txt`](examples/messages.txt), [`examples/tasks.txt`](examples/tasks.txt), [`examples/desktop-opencode.jsonc`](examples/desktop-opencode.jsonc). More usage scenarios: [English examples](docs/en/examples.md) and [Turkish guide](docs/tr/README.md).
+
+## Other platforms and model providers
+
+**OpenCode v2 is the only implemented host adapter.** The installer and host registry are separated in `src/platforms/registry.mjs` so community contributors can add other supported coding-agent applications later. The adapter contract and acceptance tests are documented in [platform adapters](docs/en/platform-adapters.md). Cursor, Claude Code, Codex and other clients are **not** claimed to be supported.
+
+**DeepSeek, Anthropic, OpenAI, OpenRouter and similar names identify model providers, not additional host applications.** The queue manager sends text to OpenCode's session and uses whichever model is selected there. DeepSeek works through OpenCode's provider integration; Queue Manager does **not** collect or manage API keys. OpenCode: `/connect` → choose provider → `/models` → choose a model. [Provider docs](https://opencode.ai/v2/docs/providers).
+
+A reference to “harmless” has not been mapped to a verified coding-agent host; no support is claimed. If a specific host tool is requested, an adapter must be built and integration-tested against its APIs.
+
+## Limits and safety
+
+- **Desktop GUI:** experimental SDK; host installation and UI integration are not yet tested in a real Desktop app in this repository's current automated suite.
+- Queue Manager drafts in Desktop and TUI are not synchronized. Native queue items use the same session/server inbox.
+- Sorting, editing and reordering **cannot atomically modify already queued native items**; these actions happen before sending.
+- Canceling a pending item does not stop a model request that is already running.
+- A crash between successful native queue admission and a local draft checkpoint could duplicate a prompt when retried.
+- The installer alters only the selected user's OpenCode global config (or calls the official OpenCode v2 plugin manager). Timestamped backups may contain your other OpenCode settings, including credentials if you placed them there: keep them private.
+- The OpenCode CLI is optional for Desktop users; Node.js 20+ is required for the installer (via `npx`), not for OpenCode Desktop itself.
+
+## Development
+
+```sh
+npm install
+npm run verify
+npm pack --dry-run
+node bin/opencode-queue-manager.mjs doctor
+```
+
+The `prepack` hook builds and tests the bundle. The npm package contains the two OpenCode plugin entries and the standalone installer binary. Read [CONTRIBUTING](CONTRIBUTING.md) and [platform adapters](docs/en/platform-adapters.md) before contributing.
+
+**Publishing is manual only.** GitHub Actions runs checks on PRs and pushes, but never publishes to npm. Maintainers must intentionally run `npm publish --access public` after verifying a new version and testing in a real OpenCode installation. See [release checklist](docs/en/releasing.md).
+
+## FAQ
+
+**Does 200 messages automatically cost 200 model calls?** The app may begin processing each queued message; the number and cost of provider calls depend on the host, model and session behavior. Do not flood the queue without reviewing it.
+
+**Can I reorder a message after sending it?** Not directly using the public native queue API. Cancel outstanding pending messages and stage a corrected list instead.
+
+**Does this work with DeepSeek?** As an OpenCode-selected model provider, yes in principle. It is not an independent DeepSeek app integration, and real model/provider combinations must be tested on the host.
+
+**Can I remove the plugin later?** Yes: `opencode plugin remove @bybrawe/opencode-queue-manager` or the installer `uninstall` command. This will not remove OpenCode or your projects.
+
+**How do I get the project indexed in Google?** Enable GitHub Pages from `/docs`, register the URL in Google Search Console, and submit its sitemap; discovery and ranking are not guaranteed. See [SEO checklist](docs/en/seo.md).
+
+## Links
+
+- [npm](https://www.npmjs.com/package/@bybrawe/opencode-queue-manager)
+- [Source, issues and contributions](https://github.com/ByBrawe/OpenCode-Queue-Manager)
+- [OpenCode v2 official docs](https://opencode.ai/v2/docs)
+- [English installation](docs/en/installation.md) · [Türkçe kullanım](docs/tr/README.md) · [Platform adapters](docs/en/platform-adapters.md)
 
 ## License
 
-MIT. Independently written; no third-party queue manager source code included.
+MIT — see [LICENSE](LICENSE). Independent community project; not an official OpenCode product.

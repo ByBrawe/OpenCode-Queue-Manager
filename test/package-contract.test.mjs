@@ -14,7 +14,8 @@ test('npm manifest is publicly publishable with real Desktop and TUI exports', a
   assert.equal(pkg.publishConfig.access, 'public');
   assert.equal(pkg.license, 'MIT');
   assert.ok(Array.isArray(pkg.files));
-  assert.ok(pkg.files.includes('dist/') && pkg.files.includes('src/'));
+  assert.ok(pkg.files.includes('dist/') && pkg.files.includes('src/') && pkg.files.includes('bin/'));
+  assert.equal(pkg.bin['opencode-queue-manager'], './bin/opencode-queue-manager.mjs');
   assert.ok(pkg.repository.url.includes('ByBrawe/OpenCode-Queue-Manager'));
   for (const entry of ['./tui', './gui-experimental']) {
     assert.ok(pkg.exports[entry], `missing ${entry} export`);
@@ -24,4 +25,8 @@ test('npm manifest is publicly publishable with real Desktop and TUI exports', a
 
 test('distributed GUI bundle is generated from the committed source', async () => {
   assert.equal(await text('dist/gui-experimental.cjs'), await text('src/gui-experimental.cjs'));
+});
+
+test('npm publishing is manual: no npm publish workflow exists', async () => {
+  await assert.rejects(stat(resolve(root, '.github/workflows/publish-npm.yml')), { code: 'ENOENT' });
 });

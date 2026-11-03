@@ -1,7 +1,7 @@
 {
   "name": "@bybrawe/opencode-queue-manager",
-  "version": "0.2.1",
-  "description": "Experimental native queue batch manager for OpenCode v2 Desktop and TUI",
+  "version": "0.3.0",
+  "description": "OpenCode queue manager for Desktop & TUI: batch prompts, editable drafts, repeat 100/200 messages, install/uninstall CLI.",
   "type": "module",
   "license": "MIT",
   "homepage": "https://github.com/ByBrawe/OpenCode-Queue-Manager#readme",
@@ -16,15 +16,23 @@
     "opencode",
     "opencode-v2",
     "opencode-plugin",
-    "queue",
-    "batch",
+    "opencode-queue",
+    "queue-manager",
+    "ai-coding-agent",
+    "prompt-queue",
+    "batch-prompts",
     "desktop",
-    "tui"
+    "tui",
+    "deepseek",
+    "windows",
+    "macos",
+    "linux"
   ],
   "publishConfig": {
     "access": "public"
   },
   "files": [
+    "bin/",
     "src/",
     "dist/",
     "README.md",
@@ -39,12 +47,15 @@
   },
   "scripts": {
     "build": "node scripts/build-gui.mjs",
-    "check": "node --check dist/gui-experimental.cjs && node --check src/queue-core.mjs",
+    "check": "node --check dist/gui-experimental.cjs && node --check src/queue-core.mjs && node --check src/installer/jsonc-config.mjs && node --check src/installer/cli.mjs && node --check bin/opencode-queue-manager.mjs",
     "test": "node --test test/*.test.mjs",
     "verify": "npm run build && npm run check && npm test",
     "prepack": "npm run verify"
   },
   "engines": {
     "node": ">=20"
+  },
+  "bin": {
+    "opencode-queue-manager": "./bin/opencode-queue-manager.mjs"
   }
 }
