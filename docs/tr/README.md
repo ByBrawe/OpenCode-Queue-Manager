@@ -89,3 +89,9 @@ DeepSeek, OpenAI, Anthropic, OpenRouter vb. **model sağlayıcılarıdır**. Ope
 GitHub'da `main` dalina kod eklendiginde testler ve paket kontrolu calisir; surum npm'deki son surumle cakisirsa patch surumu kendiliginden artirilip OIDC ile npm'e yayimlanir. Manuel `npm login`, `npm version` veya `npm publish` gerekmez. GitHub Environment `npm` koruma kurallari onay gerektiriyorsa yayin bu onayi bekler.
 
 **npm'e yayinlamak, kullanicinin cihazindaki eklentiyi kendiliginden yenilemez.** OpenCode v2 yeni surumleri kontrol eder, ancak yuklemeyi garanti etmez. Kullanici `opencode plugin update @bybrawe/opencode-queue-manager` komutuyla surumu guncelleyebilir. [Surum dokumani](../en/releasing.md).
+
+## Windows sürüm algılama ve npm uyarıları
+
+`opencode v2.0.22` gibi CLI sürümleri güncel kurulum aracı tarafından desteklenir. Yalnızca `npm i @bybrawe/opencode-queue-manager` çalıştırmak OpenCode içinde eklentiyi etkinleştirmez. `npx @bybrawe/opencode-queue-manager@latest install` ile OpenCode'a ekleyin; ardından `npx @bybrawe/opencode-queue-manager@latest doctor` çalıştırın. `doctor`, yapılandırma dosyasının yanında OpenCode'un eklenti listesini de sorgular.
+
+`25 moderate vulnerabilities` gibi npm audit uyarıları çalıştırılan dizindeki **tüm** npm bağımlılıklarını kapsar. Ayrıntı için o dizinde `npm audit` çalıştırılabilir. Kullanıcı klasöründe körlemesine `npm audit fix --force` komutunu çalıştırmayın.

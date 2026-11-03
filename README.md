@@ -47,7 +47,7 @@ npx @bybrawe/opencode-queue-manager update
 npx @bybrawe/opencode-queue-manager uninstall
 ```
 
-**Note:** `npx` runs the currently published release, which may not yet include these commands. For the unreleased source version use `node bin/opencode-queue-manager.mjs install` from a Git checkout.
+**Note:** `npm install @bybrawe/opencode-queue-manager` downloads the npm package into the current folder but does **not** register it with OpenCode. Run `npx @bybrawe/opencode-queue-manager@latest install` (or `opencode plugin add @bybrawe/opencode-queue-manager`), then `doctor`. Windows OpenCode CLI versions such as `opencode v2.0.22` are recognized. The installer does not require globally installing the package.
 
 For Desktop-only installations with no `opencode` command on `PATH`:
 
@@ -173,3 +173,9 @@ The `prepack` hook builds and tests the bundle. The npm package contains the two
 ## License
 
 MIT — see [LICENSE](LICENSE). Independent community project; not an official OpenCode product.
+
+### Windows diagnostic / npm audit notes
+
+If `doctor` shows `cliFound: true` and `cliV2: true` but `configured: false`, the OpenCode plugin is not registered. Running `npm i` in `C:\\Users\\...\\` does not activate it; use `npx @bybrawe/opencode-queue-manager@latest install` or `opencode plugin add @bybrawe/opencode-queue-manager`. `doctor` inspects both the fallback config file and the OpenCode CLI's plugin list when available.
+
+`npm audit` reports vulnerabilities in **the current working directory's entire dependency tree**, including transitive packages. Do not assume every warning is a defect in Queue Manager, and avoid `npm audit fix --force` in your Windows user home directory. Inspect the report before changing dependencies. `@opencode/plugin` is a documented runtime dependency for OpenCode v2 plugins.
