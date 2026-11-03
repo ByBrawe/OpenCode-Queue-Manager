@@ -1,10 +1,35 @@
 {
-  "name": "opencode-queue-manager-experimental",
-  "version": "0.2.0",
-  "description": "OpenCode v2 Desktop GUI + TUI native queue batch/staging manager",
-  "private": true,
+  "name": "@bybrawe/opencode-queue-manager",
+  "version": "0.2.1",
+  "description": "Experimental native queue batch manager for OpenCode v2 Desktop and TUI",
   "type": "module",
   "license": "MIT",
+  "homepage": "https://github.com/ByBrawe/OpenCode-Queue-Manager#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ByBrawe/OpenCode-Queue-Manager.git"
+  },
+  "bugs": {
+    "url": "https://github.com/ByBrawe/OpenCode-Queue-Manager/issues"
+  },
+  "keywords": [
+    "opencode",
+    "opencode-v2",
+    "opencode-plugin",
+    "queue",
+    "batch",
+    "desktop",
+    "tui"
+  ],
+  "publishConfig": {
+    "access": "public"
+  },
+  "files": [
+    "src/",
+    "dist/",
+    "README.md",
+    "LICENSE"
+  ],
   "exports": {
     "./tui": "./src/tui.ts",
     "./gui-experimental": "./dist/gui-experimental.cjs"
@@ -14,8 +39,10 @@
   },
   "scripts": {
     "build": "node scripts/build-gui.mjs",
+    "check": "node --check dist/gui-experimental.cjs && node --check src/queue-core.mjs",
     "test": "node --test test/*.test.mjs",
-    "check": "node --check dist/gui-experimental.cjs"
+    "verify": "npm run build && npm run check && npm test",
+    "prepack": "npm run verify"
   },
   "engines": {
     "node": ">=20"
