@@ -1,10 +1,35 @@
-# OpenCode Queue Manager — Desktop + TUI (experimental v0.2)
+# OpenCode Queue Manager — Desktop + TUI (experimental v0.2.1)
 
 **Open-source, MIT-licensed OpenCode v2 plugin** for creating and organizing hundreds of native-queue prompts without keyboard macros. It supports OpenCode **Desktop GUI (Windows/macOS/Linux)** and **TUI** from one local package.
 
-> **Experimental, not production-verified.** The v2 GUI plugin SDK is experimental, and this environment does not have OpenCode Desktop/TUI installed. We verified JavaScript syntax, static plugin registration and mocked client/GUI flows, not real in-app activation. No GitHub or npm publication has been performed.
+> **Experimental, not production-verified.** The v2 GUI plugin SDK is experimental, and this environment does not have OpenCode Desktop/TUI installed. We verified JavaScript syntax, static plugin registration and mocked client/GUI flows, not real in-app activation. Source: [ByBrawe/OpenCode-Queue-Manager](https://github.com/ByBrawe/OpenCode-Queue-Manager). npm publication is a separate maintainer action; do not assume the package is already live.
 
-## Desktop (Windows) installation — recommended
+## Install from npm (after first publication)
+
+Package name: **`@bybrawe/opencode-queue-manager`**. OpenCode v2 installs configured npm plugins itself; you do **not** need a global `npm install` for normal use.
+
+For **Desktop**, add this entry to your global `~/.config/opencode/opencode.jsonc` (Windows: `%USERPROFILE%\.config\opencode\opencode.jsonc`), merging it with your existing settings:
+
+```jsonc
+{
+  "$schema": "https://opencode.ai/config.json",
+  "plugins": ["@bybrawe/opencode-queue-manager"]
+}
+```
+
+For the **TUI**, add the package in `cli.json`:
+
+```json
+{
+  "plugins": ["@bybrawe/opencode-queue-manager"]
+}
+```
+
+Restart OpenCode, open a session and run `/qm` (or use the command palette). On Desktop, the Queue Manager opens in a side panel. **Desktop is supported only on OpenCode v2 with the experimental GUI SDK.** Test with 2–3 messages before using larger batches.
+
+> Until the maintainer publishes the package on npm, use the local-directory installation below. Package name availability and publication cannot be guaranteed by the source repository alone.
+
+## Local Desktop installation (Windows) — without npm
 
 1. Extract the ZIP so the project folder is, for example, `C:\tools\opencode-queue-manager` (check that `package.json` is inside this folder).
 2. Open the **OpenCode v2** global config. Press `Win + R`, enter `%USERPROFILE%\.config\opencode`, and open/create `opencode.jsonc`.
@@ -44,7 +69,7 @@ The GUI bundle is already present at `dist/gui-experimental.cjs`. No manual `npm
 - No exactly-once guarantee across app crashes: if the API accepts a message but the local draft checkpoint does not persist, retrying may duplicate that message.
 - Multiple windows editing the same session's drafts concurrently are not coordinated.
 
-## TUI installation
+## Local TUI installation
 
 The same folder exports a TUI plugin, `./tui`. If your v2 CLI isn't picking up plugins from the global config above, add this to your v2 global `cli.json`:
 
@@ -69,12 +94,21 @@ Plugin data never leaves OpenCode except when you explicitly **Publish** to its 
 Requires Node.js 20+ for the included automated tests (not required just to run the packaged plugin):
 
 ```sh
-npm run build
-npm run check
-npm test
+npm run verify
+npm pack --dry-run
 ```
 
-`npm run build` copies the already self-contained CJS source to `dist/`; no external bundle download is necessary. `npm test` uses a mocked GUI host and fake inbox to verify registration, 100-message submission, failure checkpointing, import limits and pure list operations.
+`npm run build` copies the already self-contained CJS source to `dist/`; no external bundle download is necessary. `npm test` uses a mocked GUI host and fake inbox to verify registration, 100-message submission, failure checkpointing, import limits and pure list operations. A package-contract test checks npm metadata and that the distribution bundle matches the source.
+
+## npm release checklist (maintainers)
+
+1. Verify `package.json` name/version and that you own the `@bybrawe` scope on npm. Check the exact name is available. Every npm publish needs a **new version**.
+2. Run `npm run verify` and `npm pack --dry-run`. Check that only `src/`, `dist/`, `README.md`, `LICENSE` and npm metadata are included.
+3. **Manual local publish:** `npm login` then `npm publish --access public` from the project root. The `prepack` script runs the build and tests again.
+4. **Optional GitHub Actions publish:** configure npm **Trusted Publishing** for repository `ByBrawe/OpenCode-Queue-Manager` and workflow `.github/workflows/publish-npm.yml`. Create a GitHub environment named `npm` (optionally with manual approval), then trigger **Publish npm (manual)**. This workflow cannot publish until the npm trust relationship is configured.
+5. Verify `npm view @bybrawe/opencode-queue-manager version` and test installation on a real OpenCode v2 Desktop and TUI environment before describing the plugin as production-ready.
+
+The package is experimental. CI tests and `npm pack` verify the distribution, but do **not** establish compatibility with a real running OpenCode Desktop installation.
 
 ## Source layout
 
@@ -86,8 +120,11 @@ opencode-queue-manager/
   src/tui.ts                   # TUI entry
   src/queue-core.mjs           # TUI list/publish helpers
   test/gui-contract.test.mjs   # Desktop mocked integration tests
+  test/package-contract.test.mjs # npm publication checks
   test/queue-core.test.mjs     # Pure queue tests
   scripts/build-gui.mjs
+  .github/workflows/ci.yml
+  .github/workflows/publish-npm.yml
   examples/
   LICENSE
 ```
