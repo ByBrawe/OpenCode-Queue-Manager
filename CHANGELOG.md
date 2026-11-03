@@ -1,5 +1,12 @@
 # Changelog
 
+## Next patch (automatically published)
+
+- Fixed version detection for actual Windows CLI output like `opencode v2.0.22` (previously falsely reported `cliV2: false`).
+- Removed Node.js DEP0190 warning by invoking Windows .cmd shims through explicit `cmd.exe` with `shell: false`, validating fixed arguments before invocation.
+- Updated `doctor` to check both the config file and official `opencode plugin list` output, with a clear suggested installation action.
+- Added regression tests and Windows troubleshooting instructions.
+
 ## 0.3.0 (source, automated npm publishing enabled)
 
 - Added a cross-platform CLI (`opencode-queue-manager`) to install, inspect, update and uninstall the plugin.

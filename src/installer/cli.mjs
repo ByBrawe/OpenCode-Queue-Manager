@@ -62,11 +62,35 @@ export function parseArgs(argv) {
   return { command: command || 'help', options };
 }
 
-/** All child processes use fixed executable names and fixed, trusted argument lists. */
+/**
+ * Windows npm/OpenCode executables may be .cmd shims. Use cmd.exe explicitly
+ * with shell:false (avoids Node DEP0190 shell:true + args deprecation).
+ * Every token is from our fixed internal commands: reject CMD metacharacters.
+ */
+export function windowsInvocation(command, args = []) {
+  if (!['opencode', 'npm'].includes(command)) {
+    throw new Error('Unsupported Windows child process command');
+  }
+  if (!args.every((arg) => typeof arg === 'string' && /^[a-zA-Z0-9@/._=+:-]+$/.test(arg))) {
+    throw new Error('Unsafe Windows child process argument');
+  }
+  return { command: 'cmd.exe', args: ['/d', '/s', '/c', [command, ...args].join(' ')] };
+}
+
+/** Accept "2.0.1" and real Windows CLI output "opencode v2.0.22". */
+export function parseOpenCodeMajor(value) {
+  const match = String(value ?? '').trim().match(/(?:^|\s)v?(\d+)\.\d+(?:\.\d+)?(?=$|[\s+-])/i);
+  return match ? Number(match[1]) : NaN;
+}
+
+/** All child commands and their arguments are fixed by the installer. */
 export function systemRun(command, args = []) {
-  const result = spawnSync(command, args, {
+  const child = process.platform === 'win32'
+    ? windowsInvocation(command, args)
+    : { command, args };
+  const result = spawnSync(child.command, child.args, {
     encoding: 'utf8',
-    shell: process.platform === 'win32',
+    shell: false,
     windowsHide: true,
     timeout: 120000,
   });
@@ -83,18 +107,39 @@ export async function execute(argv, deps = {}) {
   if (command === 'platforms') return { platforms };
   const version = run('opencode', ['--version']);
   const cliFound = version.code === 0;
-  const major = cliFound ? parseInt((version.stdout.match(/\b(\d+)\.\d+/) || [])[1], 10) : NaN;
-  const cliV2 = cliFound && major >= 2;
+  const versionText = (version.stdout || version.stderr || '').trim();
+  const cliV2 = cliFound && parseOpenCodeMajor(versionText) >= 2;
   if (command === 'doctor') {
-    let configured = false;
+    let configConfigured = false;
     let configError;
     try {
       const raw = await read(configPath, 'utf8');
-      configured = (parseConfig(raw).plugins || []).some(isManagedEntry);
+      configConfigured = (parseConfig(raw).plugins || []).some(isManagedEntry);
     } catch (error) {
       if (error.code !== 'ENOENT') configError = error.message;
     }
-    return { platform: 'opencode', cliFound, cliVersion: cliFound ? version.stdout.trim() : undefined, cliV2, configPath, configured, configError };
+    // The OpenCode plugin manager can register packages independently of our
+    // fallback config file. Distinguish that registration from file contents.
+    let cliConfigured = null;
+    if (cliV2) {
+      const listing = run('opencode', ['plugin', 'list']);
+      if (listing.code === 0) {
+        cliConfigured = (listing.stdout || '').includes(PACKAGE);
+      }
+    }
+    const configured = configConfigured || cliConfigured === true;
+    return {
+      platform: 'opencode',
+      cliFound,
+      cliVersion: cliFound ? versionText : undefined,
+      cliV2,
+      configPath,
+      configured,
+      configConfigured,
+      cliConfigured,
+      configError,
+      nextStep: configured ? undefined : 'Run npx @bybrawe/opencode-queue-manager@latest install to register the plugin in OpenCode.',
+    };
   }
   if (command === 'install-opencode' || command === 'uninstall-opencode') {
     const installing = command === 'install-opencode';

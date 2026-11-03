@@ -4,7 +4,7 @@ import { mkdtemp, readFile, rm, writeFile, readdir } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { PACKAGE, parseConfig, stripJsonc, planConfigChange, changeConfigFile, defaultConfigPath } from '../src/installer/jsonc-config.mjs';
-import { parseArgs, execute } from '../src/installer/cli.mjs';
+import { parseArgs, execute, parseOpenCodeMajor, windowsInvocation } from '../src/installer/cli.mjs';
 import { platforms, findPlatform } from '../src/platforms/registry.mjs';
 
 const first = '{\n  // preserve this comment\n  "$schema": "https://opencode.ai/config.json",\n  "model": "deepseek/some-model",\n  "plugins": ["other", /* keep my plugin */ "@bybrawe/opencode-queue-manager@0.2.1",],\n}\n';
@@ -128,4 +128,47 @@ test('CLI rejects unknown options or unsupported host', () => {
   assert.throws(() => parseArgs(['install', '--bogus']), /Unknown option/);
   assert.throws(() => parseArgs(['install', '--method', 'no']), /Invalid method/);
   assert.throws(() => parseArgs(['install', 'another']), /Only one command/);
+});
+
+test('real OpenCode v2 CLI version output is recognized', async () => {
+  assert.equal(parseOpenCodeMajor('opencode v2.0.22'), 2);
+  assert.equal(parseOpenCodeMajor('2.0.1'), 2);
+  assert.equal(parseOpenCodeMajor('OpenCode version v2.1.0\\r\\n'), 2);
+  assert.equal(parseOpenCodeMajor('opencode v1.99.0'), 1);
+  assert.equal(Number.isNaN(parseOpenCodeMajor('unknown version')), true);
+
+  const calls = [];
+  const run = (command, args) => {
+    calls.push([command, args]);
+    if (args[0] === '--version') return { code: 0, stdout: 'opencode v2.0.22' };
+    if (args[0] === 'plugin' && args[1] === 'list') {
+      return { code: 0, stdout: 'Installed packages:\\n@bybrawe/opencode-queue-manager@0.3.0\\n' };
+    }
+    return { code: 0, stdout: '' };
+  };
+  const doctor = await execute(['doctor'], {
+    run,
+    read: async () => { const error = new Error('not found'); error.code = 'ENOENT'; throw error; },
+  });
+  assert.equal(doctor.cliV2, true);
+  assert.equal(doctor.cliConfigured, true);
+  assert.equal(doctor.configConfigured, false);
+  assert.equal(doctor.configured, true);
+  assert.deepEqual(calls.map((entry) => entry[1]), [['--version'], ['plugin','list']]);
+  const installed = await execute(['install', '--dry-run'], { run });
+  assert.equal(installed.method, 'cli');
+  assert.match(installed.command, /plugin add/);
+});
+
+test('Windows .cmd invocation avoids shell:true and rejects CMD injection', () => {
+  assert.deepEqual(windowsInvocation('opencode', ['plugin', 'add', PACKAGE]), {
+    command: 'cmd.exe',
+    args: ['/d', '/s', '/c', 'opencode plugin add ' + PACKAGE],
+  });
+  assert.deepEqual(windowsInvocation('npm', ['ls','-g','@opencode/cli','--depth=0','--json']).args.at(-1),
+    'npm ls -g @opencode/cli --depth=0 --json');
+  for (const input of ['x&whoami', 'x|whoami', 'x%PATH%', 'a b', 'a"b', 'x^y', 'x>file']) {
+    assert.throws(() => windowsInvocation('opencode', ['plugin', input]), /Unsafe Windows child process argument/);
+  }
+  assert.throws(() => windowsInvocation('cmd.exe', []), /Unsupported Windows child process command/);
 });
