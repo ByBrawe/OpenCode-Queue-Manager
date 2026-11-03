@@ -4,7 +4,7 @@ import { mkdtemp, readFile, rm, writeFile, readdir } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { PACKAGE, parseConfig, stripJsonc, planConfigChange, changeConfigFile, defaultConfigPath } from '../src/installer/jsonc-config.mjs';
-import { parseArgs, execute, parseOpenCodeMajor, windowsInvocation } from '../src/installer/cli.mjs';
+import { parseArgs, execute, parseOpenCodeMajor, windowsInvocation, systemRun } from '../src/installer/cli.mjs';
 import { platforms, findPlatform } from '../src/platforms/registry.mjs';
 
 const first = '{\n  // preserve this comment\n  "$schema": "https://opencode.ai/config.json",\n  "model": "deepseek/some-model",\n  "plugins": ["other", /* keep my plugin */ "@bybrawe/opencode-queue-manager@0.2.1",],\n}\n';
@@ -133,7 +133,7 @@ test('CLI rejects unknown options or unsupported host', () => {
 test('real OpenCode v2 CLI version output is recognized', async () => {
   assert.equal(parseOpenCodeMajor('opencode v2.0.22'), 2);
   assert.equal(parseOpenCodeMajor('2.0.1'), 2);
-  assert.equal(parseOpenCodeMajor('OpenCode version v2.1.0\\r\\n'), 2);
+  assert.equal(parseOpenCodeMajor('OpenCode version v2.1.0\r\n'), 2);
   assert.equal(parseOpenCodeMajor('opencode v1.99.0'), 1);
   assert.equal(Number.isNaN(parseOpenCodeMajor('unknown version')), true);
 
@@ -142,7 +142,7 @@ test('real OpenCode v2 CLI version output is recognized', async () => {
     calls.push([command, args]);
     if (args[0] === '--version') return { code: 0, stdout: 'opencode v2.0.22' };
     if (args[0] === 'plugin' && args[1] === 'list') {
-      return { code: 0, stdout: 'Installed packages:\\n@bybrawe/opencode-queue-manager@0.3.0\\n' };
+      return { code: 0, stdout: 'Installed packages:\n@bybrawe/opencode-queue-manager@0.3.0\n' };
     }
     return { code: 0, stdout: '' };
   };
@@ -171,4 +171,10 @@ test('Windows .cmd invocation avoids shell:true and rejects CMD injection', () =
     assert.throws(() => windowsInvocation('opencode', ['plugin', input]), /Unsafe Windows child process argument/);
   }
   assert.throws(() => windowsInvocation('cmd.exe', []), /Unsupported Windows child process command/);
+});
+
+test('real npm command shim runs on Windows without shell:true', () => {
+  const result = systemRun('npm', ['--version']);
+  assert.equal(result.code, 0, result.stderr || result.error || 'npm version check failed');
+  assert.match(result.stdout.trim(), /^\\d+\\.\\d+\\.\\d+/);
 });
