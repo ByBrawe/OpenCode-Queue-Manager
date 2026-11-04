@@ -23,6 +23,7 @@ function harness({ throwAt = Infinity, inbox = [] } = {}) {
   const Panel = Symbol('Panel');
   const Command = Symbol('Command');
   const Style = Symbol('Style');
+  const MenuItem = Symbol('MenuItem');
   const added = new Map();
   const events = { prompts: [], canceled: [], toasts: [], toggles: [], store: undefined };
   const session = { id:'ses_test', key:'srv\nses_test', server: { id:'srv', client: { session: {
@@ -33,14 +34,15 @@ function harness({ throwAt = Infinity, inbox = [] } = {}) {
     },
   } } } };
   let store = { value:{items:[]}, ready:()=>true, set(value) { store.value=value; } };
-  const {default: definition} = vm.runInNewContext(code, {
-    module: { exports: {} },
-    exports: {},
+  const module = { exports: {} };
+  vm.runInNewContext(code, {
+    module,
+    exports: module.exports,
     setInterval:()=>1,
     clearInterval:()=>{},
     document: { createElement:(tag)=>new Element(tag) },
     require(id) {
-      if(id==='@opencode/plugin/gui')return {Plugin:{define:v=>v}, Panel, Command, Style};
+      if(id==='@opencode/plugin/gui')return {Plugin:{define:v=>v}, Panel, Command, Style, MenuItem};
       if(id==='effect')return {Schema:{Struct:v=>v, Array:v=>v, String:'string'}};
       if(id==='solid-js')return {
         createSignal:(initial)=> { let v=initial; return [()=>v,(next)=>{v=typeof next==='function'?next(v):next;return v;}]; },
@@ -49,12 +51,13 @@ function harness({ throwAt = Infinity, inbox = [] } = {}) {
       throw new Error(`Unexpected runtime dependency: ${id}`);
     },
   });
+  const definition = module.exports.default ?? module.exports;
   const ctx = {
     id:'opencode-queue-manager-experimental',
     t:(key)=>key,
     add:(key, value)=>{added.set(key,typeof value==='function'?value():value);},
     sessions: {current:()=>session},
-    layout: {open:(...args)=>events.toggles.push(args)},
+    layout: {open:(...args)=>events.toggles.push(args),state:()=> 'closed'},
     storage: {store:()=>store},
     dialogs: {confirm:async()=>true, prompt:async()=> 'edited'},
     toast: {show:(input)=>{events.toasts.push(input); return {dismiss:()=>{}};}},
