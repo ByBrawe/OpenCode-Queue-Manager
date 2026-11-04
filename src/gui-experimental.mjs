@@ -605,7 +605,7 @@ function QueueView(ctx, props) {
 const definition = Plugin.define({
   i18n: MESSAGES,
   setup(ctx) {
-    const tab = { id: "main", get title() { return ctx.t("title"); }, closable: "compact", fallback: true };
+    const tab = { id: "main", get title() { return ctx.t("panel.title"); }, closable: "compact", fallback: true };
     ctx.add(Style, css);
     ctx.add(Panel, {
       id: "main",
@@ -620,7 +620,7 @@ const definition = Plugin.define({
       const session = ctx.sessions.current();
       if (!session) {
         ctx.toast.show({
-          title: ctx.t("title"),
+          title: ctx.t("panel.title"),
           description: ctx.t("noSession"),
           variant: "info",
         });
@@ -630,7 +630,7 @@ const definition = Plugin.define({
     };
     ctx.add(Command, () => ({
       id: "open",
-      title: ctx.t("open"),
+      title: ctx.t("command.open"),
       keywords: "queue manager qm devam et 100 200 sıra liste kuyruk",
       group: "Queue Manager",
       section: "session",
