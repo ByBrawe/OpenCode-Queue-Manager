@@ -202,3 +202,14 @@ The experimental Desktop UI must be loaded **by the Desktop app's own background
 4. If Desktop reports `SQLiteError: disk I/O error`, fix the OpenCode background service before debugging the GUI. A running server with a failing database cannot load a GUI plugin.
 
 OpenCode's GUI SDK is **experimental**. Passing our plugin contract tests does not prove compatibility with every Desktop version; inspect the live plugin status if it is missing. [Official Desktop GUI plugin reference](https://opencode.ai/v2/docs/build/plugins/gui).
+
+
+### Drag-and-drop and bulk queue ordering (Desktop)
+
+Within the **draft list** (before sending to OpenCode):
+
+- Drag the **⠿** handle and drop on a message to move it before or after that row. Select multiple checkboxes first to drag those rows **as one group**, keeping their relative order.
+- Use **↑ Seçilileri yukarı / ↓ Seçilileri aşağı** to move multiple selected rows one step, or **⇡ Başa / ⇣ Sona** to move them to the beginning or end. All changes operate on the underlying full draft list, including when filtered or paginated.
+- **Bu sayfayı seç** selects the current page, **Eşleşenleri seç** selects filtered matches across pages, and **Tümünü seç** selects all drafts. Selections persist across pages. **Seçimi kaldır** clears them.
+- The drag handle supports **Alt+ArrowUp / Alt+ArrowDown / Alt+Home / Alt+End** for accessible keyboard reordering. Each row still offers single-message move buttons.
+- Reordering changes **only local drafts** and doesn't invoke a model or alter already accepted native inbox messages. Sort and review drafts, then explicitly confirm **Tümünü kuyruğa aktar**. Already running/admitted queue items cannot safely be reordered with OpenCode's published Inbox API; queued items can be listed or canceled separately.

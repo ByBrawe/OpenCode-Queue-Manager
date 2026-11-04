@@ -100,3 +100,10 @@ GitHub'da `main` dalina kod eklendiginde testler ve paket kontrolu calisir; suru
 ## Desktop'ta /qm çıkmıyorsa
 
 Queue Manager, OpenCode v2 Desktop için `@opencode/plugin/gui/vite` ile hazırlanmış deneysel GUI bileşeni barındırır. Yalnızca `npm i` çalıştırmak Desktop'ta komut eklemez. `opencode plugin update @bybrawe/opencode-queue-manager` ile OpenCode'un kayıtlı paketini yenile, Desktop'ı yeniden başlat ve **Ayarlar → Eklentiler → Plugins** bölümünde Queue Manager'ın yüklendiğini ve GUI anahtarının açık olduğunu kontrol et. Oturum açtıktan sonra `/qm`, komut paletinden `Queue Manager` veya yan paneldeki `+` menüsünü kullan. Komut artık oturum yokken de görünür; kullanıldığında önce oturum açmanı ister. Background service / SQLite hatası varsa önce OpenCode servisini onar.
+
+
+## Taslak sırasını kolay düzenleme
+
+OpenCode Desktop'ta `/qm` komutuyla Queue Manager panelini aç. Taslak mesajlarının yanındaki **☑ kutuları** işaretle. **↑ Seçilileri yukarı** veya **↓ Seçilileri aşağı** ile topluca bir basamak taşı; **⇡ Başa** veya **⇣ Sona** ile topluca başa/sona taşı. **⠿ tutamacını** başka satırın üzerine sürükleyip bırakırsan tek mesajı veya işaretlediğin tüm mesajları birlikte taşırsın. Seçili mesajların kendi aralarındaki sıra bozulmaz. **Bu sayfayı seç** (sayfalı liste), **Eşleşenleri seç** (arama sonuçlarının tümü) ve **Tümünü seç** tuşları bulunur. Klavye ile Alt+↑/↓ ve Alt+Home/End de çalışır.
+
+**Önemli:** Bunlar **henüz kuyruğa gönderilmemiş taslakları** sıralar. Gerçek OpenCode kuyruğuna alınmış mesajların sırasını sessizce değiştirmez veya çalışan modele müdahale etmez. Önce taslakları düzenleyip **Tümünü kuyruğa aktar** ile onayla.

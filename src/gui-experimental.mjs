@@ -8,6 +8,7 @@
 import { Plugin, Panel, Command, Style, MenuItem } from "@opencode/plugin/gui";
 import { Schema } from "effect";
 import { createEffect, createMemo, createSignal, onCleanup } from "solid-js";
+import { shiftSelected, moveSelectedToEdge, dropSelected } from "./draft-order.mjs";
 
 const MAX_REPEAT = 500;
 const MAX_DRAFTS = 2000;
@@ -72,6 +73,15 @@ const css = `
 .oqm-list { max-height:55vh; overflow:auto; border:1px solid var(--border-base,#393942); border-radius:6px; }
 .oqm-item { padding:8px 6px; display:flex; gap:8px; align-items:start; border-bottom:1px solid var(--border-weak,#34343b); }
 .oqm-item:last-child { border-bottom:none; }
+.oqm-item[aria-selected=true] { background:var(--surface-raised,#2a2a30); }
+.oqm-item.oqm-drop-before { box-shadow: inset 0 3px var(--text-accent,#76b0ff); }
+.oqm-item.oqm-drop-after { box-shadow: inset 0 -3px var(--text-accent,#76b0ff); }
+.oqm-drag-handle { cursor:grab !important; flex:none; padding:6px 5px !important; touch-action:manipulation; user-select:none; }
+.oqm-drag-handle:active { cursor:grabbing !important; }
+.oqm-bulk-actions { background:var(--surface-raised,#242429); border-radius:6px; padding:5px; }
+.oqm-bulk-actions button { white-space:nowrap; }
+.oqm-item .oqm-row { margin:0; }
+.oqm-item:focus-within { outline:1px solid var(--text-accent,#76b0ff); outline-offset:-1px; }
 .oqm-index { font-variant-numeric:tabular-nums; font-size:11px; color:var(--text-muted,#97979d); width:32px; flex:none; }
 .oqm-content { min-width:0; white-space:pre-wrap; overflow-wrap:anywhere; font-size:12px; line-height:1.55; flex:1; }
 .oqm-muted { color:var(--text-muted,#999); }
@@ -119,6 +129,8 @@ function QueueView(ctx, props) {
   const [status, setStatus] = createSignal("");
   const [loading, setLoading] = createSignal(false);
   let token = 0;
+  let dragged = null;
+  let highlightedDrop = null;
   const current = () => [...(draftStore().value?.items ?? [])];
   const save = (rows) => {
     if (!draftStore().ready()) throw new Error("Taslaklar henüz yüklenmedi; yeniden dene.");
@@ -214,15 +226,76 @@ function QueueView(ctx, props) {
     rows[index] = text.trim();
     save(rows);
   }
+  // Publish has no native reorder API: only staged drafts may move.
+  function commitOrder(result) {
+    if (busy() || !result.changed) return;
+    try {
+      save(result.items);
+      setSelected(result.selected);
+      // Unfilter after a move so the new position is visible and unambiguous.
+      if (search()) { setSearch(""); searchBox.value = ""; }
+      setPage(Math.floor((result.selected[0] ?? 0) / PER_PAGE));
+    } catch (err) { error(err); }
+  }
   function reorder(index, target) {
+    const rows = current();
+    if (busy() || index < 0 || index >= rows.length || target < 0 || target >= rows.length) return;
+    commitOrder(dropSelected(rows, [index], target, target > index ? "after" : "before"));
+  }
+  function selectedOrder(mode) {
     if (busy()) return;
     const rows = current();
-    if (index < 0 || index >= rows.length || target < 0 || target >= rows.length) return;
-    const [moved] = rows.splice(index, 1);
-    rows.splice(target, 0, moved);
-    save(rows);
-    setSelected([target]);
-    setPage(Math.floor(target / PER_PAGE));
+    const selection = selected();
+    const result = mode === "up" || mode === "down"
+      ? shiftSelected(rows, selection, mode)
+      : moveSelectedToEdge(rows, selection, mode);
+    commitOrder(result);
+  }
+  function clearDropMarker() {
+    if (highlightedDrop) {
+      highlightedDrop.classList?.remove("oqm-drop-before", "oqm-drop-after");
+      highlightedDrop = null;
+    }
+  }
+  function dragPlacement(event, item) {
+    const rect = item.getBoundingClientRect?.();
+    return rect && Number.isFinite(event.clientY)
+      && event.clientY >= rect.top + rect.height / 2 ? "after" : "before";
+  }
+  function prepareDrag(event, index) {
+    if (busy()) { event.preventDefault(); return; }
+    const rows = current();
+    const selection = selected().includes(index) ? selected() : [index];
+    dragged = { selection, rows, sessionKey: session()?.key };
+    if (event.dataTransfer) {
+      event.dataTransfer.effectAllowed = "move";
+      event.dataTransfer.setData("text/plain", "queue-manager-drafts");
+    }
+  }
+  function finishDrag() { dragged = null; clearDropMarker(); }
+  function previewDrop(event, item) {
+    if (!dragged || busy()) return;
+    event.preventDefault();
+    if (event.dataTransfer) event.dataTransfer.dropEffect = "move";
+    const placement = dragPlacement(event, item);
+    if (highlightedDrop !== item) clearDropMarker();
+    highlightedDrop = item;
+    item.classList?.toggle("oqm-drop-before", placement === "before");
+    item.classList?.toggle("oqm-drop-after", placement === "after");
+  }
+  function dropOn(event, index, item) {
+    if (!dragged) return;
+    event.preventDefault();
+    const from = dragged;
+    const position = dragPlacement(event, item);
+    finishDrag();
+    if (busy() || from.sessionKey !== session()?.key) return;
+    const rows = current();
+    if (rows.length !== from.rows.length || rows.some((value, i) => value !== from.rows[i])) {
+      error(new Error("Liste sürükleme sırasında değişti. Yeniden dene."));
+      return;
+    }
+    commitOrder(dropSelected(rows, from.selection, index, position));
   }
   async function deleteSelected() {
     if (busy()) return;
@@ -311,10 +384,29 @@ function QueueView(ctx, props) {
     const indices = current().map((text,i) => ({text,i})).filter(({text}) => text.toLocaleLowerCase("tr").includes(search().toLocaleLowerCase("tr"))).map(({i}) => i);
     setSelected(indices);
   }));
+  selectTools.append(button("Bu sayfayı seç", () => {
+    if (busy()) return;
+    const query = search().toLocaleLowerCase("tr");
+    const found = current().map((text, index) => ({ text, index })).filter(({text}) => text.toLocaleLowerCase("tr").includes(query));
+    const offset = page() * PER_PAGE;
+    const visible = found.slice(offset, offset + PER_PAGE).map(({ index }) => index);
+    setSelected((was) => [...new Set([...was, ...visible])]);
+  }));
+  selectTools.append(button("Tümünü seç", () => { if (!busy()) setSelected(current().map((_, i) => i)); }));
   selectTools.append(button("Seçimi kaldır", () => setSelected([])));
   selectTools.append(button("Seçilileri sil", deleteSelected, "oqm-danger"));
   listSection.append(selectTools);
-  const draftList = element("div", "oqm-list"); listSection.append(draftList);
+  const bulk = element("div", "oqm-row oqm-bulk-actions");
+  const bulkButtons = [
+    button("↑ Seçilileri yukarı", () => selectedOrder("up")),
+    button("↓ Seçilileri aşağı", () => selectedOrder("down")),
+    button("⇡ Başa", () => selectedOrder("start")),
+    button("⇣ Sona", () => selectedOrder("end")),
+  ];
+  bulk.append(...bulkButtons);
+  listSection.append(bulk);
+  listSection.append(element("div", "oqm-sub", "☑ Satırları işaretle; ⠿ tutamacından sürükle-bırak ile tekli veya toplu taşı. Klavye: Alt+↑/↓, Alt+Home/End. Değişiklikler yalnızca taslaktadır."));
+  const draftList = element("div", "oqm-list"); draftList.setAttribute("role", "list"); listSection.append(draftList);
   const paging = element("div", "oqm-row");
   paging.append(button("Önceki", () => setPage(Math.max(0, page() - 1))));
   const pageLabel = element("span", "oqm-sub oqm-flex"); paging.append(pageLabel);
@@ -324,7 +416,7 @@ function QueueView(ctx, props) {
   bottom.append(button("Tümünü kuyruğa aktar", publish, "oqm-primary")); listSection.append(bottom);
 
   const nativeSection = element("div", "oqm-section");
-  nativeSection.append(element("div", "oqm-sub", "OpenCode'un gerçek bekleyen kuyruğu (çalışan görev ayrı)."));
+  nativeSection.append(element("div", "oqm-sub", "OpenCode'un gerçek bekleyen kuyruğu (çalışan görev ayrı). Burada sıralama değiştirilmez; taslakta sırala, sonra kuyruğa gönder."));
   const nativeActions = element("div", "oqm-row");
   nativeActions.append(button("Yenile", () => refreshInbox()));
   nativeActions.append(button("Seçili mesajları iptal et", () => cancelNative(false), "oqm-danger"));
@@ -356,16 +448,41 @@ function QueueView(ctx, props) {
     const isBusy = busy();
     countLabel.textContent = `${rows.length} taslak / ${native().length} bekleyen`;
     selectCount.textContent = `${chosen.size} seçili / ${all.length} eşleşen`;
+    for (const action of bulkButtons) action.disabled = isBusy || chosen.size === 0;
     pageLabel.textContent = `${pageIndex + 1}/${pages} sayfa`;
     wipe(draftList);
     if (!draftStore().ready()) draftList.append(element("div", "oqm-item oqm-muted", "Taslaklar yükleniyor…"));
     else if (!visible.length) draftList.append(element("div", "oqm-item oqm-muted", "Mesaj bulunamadı."));
     for (const row of visible) {
       const item = element("div", "oqm-item");
+      item.setAttribute("role", "listitem");
+      item.setAttribute("aria-selected", String(chosen.has(row.index)));
+      item.addEventListener("dragover", (event) => previewDrop(event, item));
+      item.addEventListener("drop", (event) => dropOn(event, row.index, item));
+      item.addEventListener("dragleave", () => { if (highlightedDrop === item) clearDropMarker(); });
       const check = input("checkbox", "", ""); check.checked = chosen.has(row.index); check.disabled = isBusy;
       check.setAttribute("aria-label", `#${row.index + 1} seç`);
       check.addEventListener("change", () => setSelected((was) => check.checked ? [...new Set([...was,row.index])] : was.filter((i) => i !== row.index)));
-      item.append(check, element("span", "oqm-index", String(row.index + 1).padStart(3,"0")));
+      const handle = button("⠿", () => {}, "oqm-drag-handle");
+      handle.title = "Sürükleyip başka sıraya bırak (işaretli satırları birlikte taşır)";
+      handle.setAttribute("aria-label", `#${row.index + 1} taşı: sürükle-bırak veya Alt+ok tuşları`);
+      handle.draggable = !isBusy;
+      handle.disabled = isBusy;
+      handle.addEventListener("dragstart", (event) => prepareDrag(event, row.index));
+      handle.addEventListener("dragend", finishDrag);
+      handle.addEventListener("keydown", (event) => {
+        if (busy() || !event.altKey) return;
+        const mode = event.key === "ArrowUp" ? "up" : event.key === "ArrowDown" ? "down"
+          : event.key === "Home" ? "start" : event.key === "End" ? "end" : null;
+        if (!mode) return;
+        event.preventDefault();
+        const selection = selected().includes(row.index) ? selected() : [row.index];
+        const rows = current();
+        commitOrder(mode === "up" || mode === "down"
+          ? shiftSelected(rows, selection, mode)
+          : moveSelectedToEdge(rows, selection, mode));
+      });
+      item.append(check, handle, element("span", "oqm-index", String(row.index + 1).padStart(3,"0")));
       const msg = element("div", "oqm-content", summary(row.text, 600)); item.append(msg);
       const actions = element("div", "oqm-row");
       const up = button("↑", () => reorder(row.index, row.index - 1)); up.title = "Yukarı taşı"; up.disabled = isBusy || row.index === 0;
@@ -409,7 +526,7 @@ function QueueView(ctx, props) {
     void refreshInbox(session());
   });
   const timer = setInterval(() => { if (!busy() && section() === "native") void refreshInbox(); }, 6000);
-  onCleanup(() => { clearInterval(timer); token++; });
+  onCleanup(() => { clearInterval(timer); token++; finishDrag(); });
   return root;
 }
 
