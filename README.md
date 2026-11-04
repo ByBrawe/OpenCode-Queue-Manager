@@ -6,7 +6,7 @@
 
 [**Türkçe rehber**](docs/tr/README.md) · [**20-language guide**](docs/languages/README.md) · [Installation](#installation) · [Examples](#examples) · [FAQ](#faq) · [Roadmap](#other-platforms-and-model-providers)
 
-> **Experimental:** OpenCode v2's Desktop GUI plugin SDK changes between releases. Automated mock tests pass, but actual OpenCode Desktop/TUI compatibility still requires testing. The installer is included in source v0.3.0 and becomes available on npm after the automatic release workflow successfully publishes v0.3.0 (or later). Published versions are listed at [npm](https://www.npmjs.com/package/@bybrawe/opencode-queue-manager).
+> **Experimental:** OpenCode v2's Desktop GUI plugin SDK changes between releases. Automated mock tests pass, but actual OpenCode Desktop/TUI compatibility still requires testing. The install/update helper is already available on npm; future package updates are published automatically after tests pass. Published versions are listed at [npm](https://www.npmjs.com/package/@bybrawe/opencode-queue-manager).
 
 ## Highlights
 
@@ -37,7 +37,7 @@ opencode plugin list
 
 Restart OpenCode Desktop or TUI and open a session; use `/qm` or search the command palette for **Queue Manager**. A GUI plugin is loaded in Desktop only if the current OpenCode v2 Desktop app supports its experimental `./gui-experimental` export. [Official plugin reference](https://opencode.ai/v2/docs/plugins).
 
-### One-command installer (v0.3.0 once released)
+### One-command installer (current npm release)
 
 Our installer recognizes the OpenCode CLI. If it's missing, it can edit only the user's Desktop/server `opencode.jsonc` as a fallback. It preserves unrelated settings and creates a timestamped backup for changes.
 
