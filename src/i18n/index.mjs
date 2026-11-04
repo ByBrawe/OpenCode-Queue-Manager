@@ -80,7 +80,7 @@ export const MESSAGES = Object.freeze(catalog);
 export function normalizeLocale(input) {
   const locale = String(input || "").trim().replace(/_/g, "-").toLowerCase();
   if (locale === "pt" || locale.startsWith("pt-")) return "pt-BR";
-  if (locale === "zh" || locale === "zh-hans" || locale.startsWith("zh-cn") || locale.startsWith("zh-sg")) return "zh-CN";
+  if (locale === "zh" || locale.startsWith("zh-hans") || locale.startsWith("zh-cn") || locale.startsWith("zh-sg")) return "zh-CN";
   const primary = locale.split("-")[0];
   return SUPPORTED_LANGUAGES.includes(primary) ? primary : "en";
 }
