@@ -2,6 +2,10 @@
 
 ## Next patch (automatically published)
 
+- Add Desktop drag-and-drop reordering for individual and checkbox-selected groups of draft prompts, preserving relative order and duplicates.
+- Add bulk up/down/start/end controls, page/match/all selection, keyboard shortcuts (Alt+arrows/Home/End), selected-row visual feedback and sortable list accessibility.
+- Keep OpenCode native admitted queue untouched; reordering is intentionally draft-only. Add pure regression tests for 200-message batches, filtered selections, and stable reordering.
+
 - Built Desktop GUI using the official OpenCode V2 `@opencode/plugin/gui/vite` preset instead of copying a raw CommonJS source file.
 - Always register the `/qm` Desktop command (including before a session is chosen), with an explanatory no-session notice, and add a Queue Manager `session.panel` menu launcher.
 - Added a Desktop GUI bundle contract smoke test covering the default export, `/qm` and panel registration, based on native V2 plugin patterns.
