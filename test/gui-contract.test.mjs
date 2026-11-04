@@ -24,7 +24,7 @@ class Element {
 }
 const tick = () => new Promise((resolve) => setImmediate(resolve));
 
-function harness({ throwAt = Infinity, inbox = [] } = {}) {
+function harness({ throwAt = Infinity, inbox = [], hostLocale = 'tr', preferred = 'auto' } = {}) {
   const Panel = Symbol('Panel');
   const Command = Symbol('Command');
   const Style = Symbol('Style');
@@ -40,6 +40,7 @@ function harness({ throwAt = Infinity, inbox = [] } = {}) {
     },
   } } } };
   let store = { value:{items:[]}, ready:()=>true, set(value) { store.value=value; } };
+  let preferences = { value:{locale:preferred}, ready:()=>true, set(value) { preferences.value=value; } };
   const module = { exports: {} };
   vm.runInNewContext(code, {
     module,
@@ -64,12 +65,19 @@ function harness({ throwAt = Infinity, inbox = [] } = {}) {
     add:(key, value)=>{added.set(key,typeof value==='function'?value():value);},
     sessions: {current:()=>session},
     layout: {open:(...args)=>events.toggles.push(args),state:()=> 'closed'},
-    storage: {store:()=>store},
+    storage: {store:(key)=>key === 'queue-manager.preferences.v1' ? preferences : store},
+    locale: {locale:()=>hostLocale},
     dialogs: {confirm:async()=>true, prompt:async()=> 'edited'},
     toast: {show:(input)=>{events.toasts.push(input); return {dismiss:()=>{}};}},
   };
   definition.setup(ctx);
-  return { session, ctx, definition, added, Panel, Command, Style, events, store, root:()=>added.get(Panel).render({session}), refresh:()=>effects[1](), /* run only the draft render, not the session-reset effect */ inbox:(next)=>{inbox=next;} };
+  return {
+    session, ctx, definition, added, Panel, Command, Style, events, store, preferences,
+    root:()=>added.get(Panel).render({session}),
+    refresh:()=>effects[1](),
+    refreshLocale:()=>{ effects.at(-2)(); effects[1](); effects[2](); },
+    inbox:(next)=>{inbox=next;},
+  };
 }
 
 function click(root,text) {
@@ -139,11 +147,11 @@ test('Desktop GUI supports line import and refuses oversized repeat counts',asyn
 
 function findDraftCheck(root, index) {
   return root.find((node) => node.tagName === 'input'
-    && node.attributes?.['aria-label'] === `#${index} seç`);
+    && node.attributes?.['aria-label'] === `#${index} seçili`);
 }
 function findDraftHandle(root, index) {
   return root.find((node) => node.tagName === 'button'
-    && node.attributes?.['aria-label']?.startsWith(`#${index} taşı:`));
+    && node.attributes?.['aria-label']?.startsWith(`#${index} Sürükle:`));
 }
 function draftRow(root, index) {
   const check = findDraftCheck(root, index);
@@ -254,4 +262,61 @@ test('bulk selection spans 75-item pages and filtered matches preserve list orde
   assert.deepEqual(Array.from(h.store.value.items).slice(0, 3), ['special #2', 'special #47', 'special #79']);
   assert.equal(search.value, '', 'search is cleared so the new positions remain visible');
   assert.equal(h.events.prompts.length, 0);
+});
+
+test('Desktop supports auto host language, persistent override and RTL without touching drafts', async () => {
+  const h = harness({ hostLocale: 'en-US' });
+  const root = h.root();
+  assert.ok(root.find((node) => node.tagName === 'button' && node.textContent === 'Add to drafts'));
+  assert.equal(root.attributes.dir, 'ltr');
+  const selector = root.find((node) => node.tagName === 'select');
+  assert.ok(selector, 'language dropdown exists');
+  assert.equal(selector.children.length, 21, '20 languages and Auto option');
+  assert.equal(selector.value, 'auto');
+
+  selector.value = 'de';
+  selector.fire('change');
+  h.refreshLocale();
+  assert.equal(h.preferences.value.locale, 'de');
+  assert.ok(root.find((node) => node.tagName === 'button' && node.textContent === 'Zu Entwürfen hinzufügen'));
+  assert.ok(root.find((node) => node.tagName === 'summary' && node.textContent === 'Funktionen des Queue Managers'));
+
+  selector.value = 'ar';
+  selector.fire('change');
+  h.refreshLocale();
+  assert.equal(root.attributes.dir, 'rtl');
+  assert.equal(root.attributes.lang, 'ar');
+  assert.ok(root.find((node) => node.tagName === 'button' && node.textContent === 'إضافة إلى المسودات'));
+
+  // A language change must not send, delete or translate user-authored content.
+  const areas = [];
+  function collect(node) {
+    if (node.tagName === 'textarea') areas.push(node);
+    for (const child of node.children) collect(child);
+  }
+  collect(root);
+  areas[0].value = 'unchanged user prompt';
+  click(root, 'إضافة إلى المسودات');
+  await tick();
+  assert.equal(h.store.value.items.length, 100);
+  assert.ok(h.store.value.items.every((value) => value === 'unchanged user prompt'));
+  assert.equal(h.events.prompts.length, 0);
+
+  selector.value = 'tr';
+  selector.fire('change');
+  h.refreshLocale();
+  assert.equal(root.attributes.dir, 'ltr');
+  assert.equal(h.store.value.items[0], 'unchanged user prompt');
+  assert.ok(root.find((node) => node.tagName === 'button' && node.textContent === 'Taslağa ekle'));
+});
+
+test('auto mode follows OpenCode language and translates warnings', () => {
+  const h = harness({ hostLocale:'ja-JP' });
+  const root = h.root();
+  assert.ok(root.find((node)=>node.tagName === 'button' && node.textContent === '下書きに追加'));
+  assert.ok(root.find((node)=>node.tagName === 'summary' && node.textContent === 'Queue Managerの機能'));
+  const select = root.find((node)=>node.tagName === 'select');
+  select.value = 'tr'; select.fire('change'); h.refreshLocale();
+  assert.equal(h.preferences.value.locale, 'tr');
+  assert.ok(root.find((node)=>node.tagName === 'button' && node.textContent === 'Taslağa ekle'));
 });
