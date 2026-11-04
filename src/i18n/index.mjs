@@ -71,6 +71,8 @@ for (const code of SUPPORTED_LANGUAGES) {
     ...DETAIL_LABELS[code],
     ...fallback[code],
     title: "Queue Manager",
+    "panel.title": "Queue Manager",
+    "command.open": UI_LABELS[code].open,
   });
 }
 export const MESSAGES = Object.freeze(catalog);
