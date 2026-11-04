@@ -2,6 +2,11 @@
 
 ## Next patch (automatically published)
 
+- Localized OpenCode v2 Desktop Queue Manager in 20 languages with a user-selectable, globally persisted language override, automatic host-locale detection, and RTL layout for Arabic and Persian.
+- Localized 60 key UI and safety texts per language, including draft/reorder actions, confirmations and an expandable features overview. Uncommon error diagnostics may fall back to English.
+- Added a 20-language GitHub guide and crawlable HTML feature page with sitemap entry, plus RTL and locale regression tests. TUI translations remain out of scope.
+
+
 - Add Desktop drag-and-drop reordering for individual and checkbox-selected groups of draft prompts, preserving relative order and duplicates.
 - Add bulk up/down/start/end controls, page/match/all selection, keyboard shortcuts (Alt+arrows/Home/End), selected-row visual feedback and sortable list accessibility.
 - Keep OpenCode native admitted queue untouched; reordering is intentionally draft-only. Add pure regression tests for 200-message batches, filtered selections, and stable reordering.
