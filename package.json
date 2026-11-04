@@ -1,7 +1,7 @@
 {
   "name": "@bybrawe/opencode-queue-manager",
   "version": "0.3.4",
-  "description": "OpenCode queue manager for Desktop & TUI: batch prompts, editable drafts, repeat 100/200 messages, install/uninstall CLI.",
+  "description": "OpenCode v2 Desktop and TUI prompt queue manager: batch tasks, reorder drafts by drag-and-drop, 20-language Desktop interface and safe plugin installer.",
   "type": "module",
   "license": "MIT",
   "homepage": "https://github.com/ByBrawe/OpenCode-Queue-Manager#readme",
@@ -26,7 +26,11 @@
     "deepseek",
     "windows",
     "macos",
-    "linux"
+    "linux",
+    "multilingual",
+    "internationalization",
+    "i18n",
+    "rtl"
   ],
   "publishConfig": {
     "access": "public"
@@ -48,7 +52,7 @@
   },
   "scripts": {
     "build": "node scripts/build-gui.mjs",
-    "check": "node --check dist/gui-experimental.cjs && node --check src/gui-experimental.mjs && node --check src/queue-core.mjs && node --check src/installer/jsonc-config.mjs && node --check src/installer/cli.mjs && node --check bin/opencode-queue-manager.mjs && node --check scripts/prepare-npm-release.mjs && node --check src/release/version.mjs",
+    "check": "node --check dist/gui-experimental.cjs && node --check src/gui-experimental.mjs && node --check src/queue-core.mjs && node --check src/installer/jsonc-config.mjs && node --check src/installer/cli.mjs && node --check bin/opencode-queue-manager.mjs && node --check scripts/prepare-npm-release.mjs && node --check src/release/version.mjs && node --check src/i18n/index.mjs && node --check src/i18n/labels.mjs && node --check src/i18n/details.mjs",
     "test": "node --test",
     "verify": "npm run build && npm run check && npm test",
     "prepack": "npm run verify"
