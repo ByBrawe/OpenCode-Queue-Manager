@@ -2,7 +2,7 @@
 
 **OpenCode v2 Desktop ve TUI için toplu mesaj kuyruğu yönetimi.** 100, 200 veya istediğiniz sayıda `devam et` mesajı oluşturun; alt alta listeleyin, düzenleyin, sıraya koyun ve yalnızca onayladığınızda OpenCode'un gerçek kuyruğuna gönderin.
 
-> **Deneysel:** Desktop GUI eklenti API'si değişebilir. Otomatik testler çalışıyor ancak gerçek Desktop entegrasyon testi henüz tamamlanmadı. Kaynaktaki v0.3.0 kurulum aracı npm'de yayımlanana kadar `npx` komutlarında bulunmayabilir.
+> **Deneysel:** Desktop GUI eklenti API'si değişebilir. Otomatik testler çalışıyor ancak gerçek Desktop entegrasyon testi henüz tamamlanmadı. Kurulum aracı npm'de yayımlandı; güncellemeler GitHub Actions testlerinden sonra otomatik çıkar.
 
 ## En hızlı kurulum
 
@@ -14,7 +14,7 @@ opencode plugin add @bybrawe/opencode-queue-manager
 
 OpenCode Desktop veya TUI'yi yeniden açın. Oturumda `/qm` komutunu kullanın ya da komut paletinden Queue Manager'ı arayın.
 
-### Otomatik kurulum/kaldırma (v0.3.0 yayımlandıktan sonra)
+### Otomatik kurulum/kaldırma
 
 ```powershell
 npx @bybrawe/opencode-queue-manager install
