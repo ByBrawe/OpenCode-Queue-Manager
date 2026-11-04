@@ -183,23 +183,27 @@ function QueueView(ctx, props) {
   async function stageRepeated() {
     if (busy()) return;
     try {
-      const n = assertRepeat(count.value);
+      const n = assertRepeat(count.value, t);
       const text = content.value.trim();
-      if (!text) throw new Error("Mesaj boş olamaz.");
-      const ok = await ctx.dialogs.confirm({ title: "Mesajları taslağa ekle", description: `${n} adet “${summary(text, 70)}” eklenecek. Henüz AI'ya gönderilmeyecek.`, confirm: "Taslağa ekle" });
+      if (!text) throw new Error(t("error.messageEmpty"));
+      const ok = await ctx.dialogs.confirm({
+        title: t("addDraft"),
+        description: `${n} × “${summary(text, 70)}”. ${t("stageSafety")}`,
+        confirm: t("addDraft"),
+      });
       if (!ok) return;
       save([...current(), ...Array(n).fill(text)]);
       clearSelection();
-      notice(`${n} mesaj taslağa eklendi.`);
+      notice(`${n} ${t("draftWord")} ✓`);
     } catch (err) { error(err); }
   }
   async function addLines(raw) {
     if (busy()) return;
     try {
-      const rows = parseLines(raw);
+      const rows = parseLines(raw, t);
       save([...current(), ...rows]);
       clearSelection();
-      notice(`${rows.length} satır eklendi.`);
+      notice(`${rows.length} ${t("draftWord")} ✓`);
     } catch (err) { error(err); }
   }
   async function runFile(file) {
@@ -213,9 +217,9 @@ function QueueView(ctx, props) {
     const ref = session();
     if (!ref || !rows.length) return;
     const ok = await ctx.dialogs.confirm({
-      title: "Gerçek kuyruğa gönder",
-      description: `${rows.length} mesaj ${ref.id} oturumuna sırayla eklenecek. İşlem başlayabilir ve model maliyeti oluşturabilir.`,
-      confirm: "Kuyruğa aktar",
+      title: t("sendAll"),
+      description: `${rows.length} → ${ref.id}. ${t("sendSafety")}`,
+      confirm: t("sendAll"),
     });
     if (!ok) return;
     setBusy(true);
@@ -223,18 +227,18 @@ function QueueView(ctx, props) {
     try {
       while (sent < rows.length) {
         // Do not accidentally send into a different routed session.
-        if (session()?.key !== ref.key) throw new Error("Oturum değişti; gönderim durduruldu.");
+        if (session()?.key !== ref.key) throw new Error(t("error.sessionChanged"));
         const currentRows = current();
-        if (currentRows[0] !== rows[sent]) throw new Error("Taslak gönderim sırasında değişti; gönderim durduruldu.");
+        if (currentRows[0] !== rows[sent]) throw new Error(t("error.draftsChanged"));
         await ref.server.client.session.prompt({ sessionID: ref.id, text: rows[sent], delivery: "queue" });
         // Checkpoint after acceptance. A hard crash between these two calls may duplicate one item.
         draftStore().set({ items: currentRows.slice(1) });
         sent += 1;
-        if (sent % 10 === 0) setStatus(`${sent}/${rows.length} mesaj kuyruğa eklendi…`);
+        if (sent % 10 === 0) setStatus(`${sent}/${rows.length} ${t("pendingWord")}…`);
       }
       clearSelection();
-      notice(`${sent} mesaj gerçek OpenCode kuyruğuna eklendi.`);
-    } catch (err) { error(new Error(`${sent} mesaj aktarıldı. ${errorMessage(err)}`)); }
+      notice(`${sent} ${t("pendingWord")} ✓`);
+    } catch (err) { error(new Error(`${sent} ${t("pendingWord")}. ${errorMessage(err)}`)); }
     finally { setBusy(false); await refreshInbox(ref); }
   }
 
@@ -242,10 +246,10 @@ function QueueView(ctx, props) {
     if (busy()) return;
     const old = current()[index];
     if (old === undefined) return;
-    const text = await ctx.dialogs.prompt({ title: `#${index + 1} mesajını düzenle`, value: old, submit: "Kaydet" });
+    const text = await ctx.dialogs.prompt({ title: `#${index + 1} · ${t("edit")}`, value: old, submit: t("save") });
     if (!text?.trim()) return;
     const rows = current();
-    if (rows[index] !== old) return error(new Error("Liste değişti; tekrar dene."));
+    if (rows[index] !== old) return error(new Error(t("error.listChanged")));
     rows[index] = text.trim();
     save(rows);
   }
@@ -315,7 +319,7 @@ function QueueView(ctx, props) {
     if (busy() || from.sessionKey !== session()?.key) return;
     const rows = current();
     if (rows.length !== from.rows.length || rows.some((value, i) => value !== from.rows[i])) {
-      error(new Error("Liste sürükleme sırasında değişti. Yeniden dene."));
+      error(new Error(t("error.dragChanged")));
       return;
     }
     commitOrder(dropSelected(rows, from.selection, index, position));
@@ -324,7 +328,10 @@ function QueueView(ctx, props) {
     if (busy()) return;
     const ids = selected();
     if (!ids.length) return;
-    const ok = await ctx.dialogs.confirm({ title: "Taslak mesajları sil", description: `${ids.length} seçili taslak mesajı silinsin mi?`, confirm: "Sil", danger: true });
+    const ok = await ctx.dialogs.confirm({
+      title: t("deleteSelected"), description: `${ids.length}. ${t("deleteSafety")}`,
+      confirm: t("deleteSelected"), danger: true,
+    });
     if (!ok) return;
     const keep = new Set(ids);
     save(current().filter((_, i) => !keep.has(i)));
@@ -332,7 +339,10 @@ function QueueView(ctx, props) {
   }
   async function clearAll() {
     if (busy() || !current().length) return;
-    const ok = await ctx.dialogs.confirm({ title: "Bütün taslakları temizle", description: `${current().length} taslak silinecek. Gerçek kuyruk değişmez.`, confirm: "Taslakları temizle", danger: true });
+    const ok = await ctx.dialogs.confirm({
+      title: t("clearAll"), description: `${current().length}. ${t("clearSafety")}`,
+      confirm: t("clearAll"), danger: true,
+    });
     if (!ok) return;
     save([]); clearSelection();
   }
@@ -343,18 +353,22 @@ function QueueView(ctx, props) {
     const selectedSet = new Set(pendingSelected());
     const items = native().filter((item) => item.type === "user" && item.delivery === "queue" && (all || selectedSet.has(item.id)));
     if (!items.length) return;
-    const ok = await ctx.dialogs.confirm({ title: "Gerçek kuyruğu temizle", description: `${items.length} bekleyen kullanıcı mesajı iptal edilecek. Çalışan görev durdurulmaz.`, confirm: "Mesajları iptal et", danger: true });
+    const ok = await ctx.dialogs.confirm({
+      title: t(all ? "cancelAll" : "cancelSelected"),
+      description: `${items.length}. ${t("cancelSafety")}`,
+      confirm: t(all ? "cancelAll" : "cancelSelected"), danger: true,
+    });
     if (!ok) return;
     setBusy(true);
     let removed = 0;
     try {
       for (const item of items) {
-        if (session()?.key !== ref.key) throw new Error("Oturum değişti.");
+        if (session()?.key !== ref.key) throw new Error(t("error.sessionShort"));
         await ref.server.client.session.inbox.cancel({ sessionID: ref.id, inboxID: item.id });
         removed++;
       }
-      notice(`${removed} bekleyen mesaj için iptal gönderildi.`);
-    } catch (err) { error(new Error(`${removed} mesaj iptal edildi. ${errorMessage(err)}`)); }
+      notice(`${removed} ${t("pendingWord")} ×`);
+    } catch (err) { error(new Error(`${removed} ${t("pendingWord")}. ${errorMessage(err)}`)); }
     finally { setBusy(false); setPendingSelected([]); await refreshInbox(ref); }
   }
 
