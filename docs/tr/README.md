@@ -107,3 +107,11 @@ Queue Manager, OpenCode v2 Desktop için `@opencode/plugin/gui/vite` ile hazırl
 OpenCode Desktop'ta `/qm` komutuyla Queue Manager panelini aç. Taslak mesajlarının yanındaki **☑ kutuları** işaretle. **↑ Seçilileri yukarı** veya **↓ Seçilileri aşağı** ile topluca bir basamak taşı; **⇡ Başa** veya **⇣ Sona** ile topluca başa/sona taşı. **⠿ tutamacını** başka satırın üzerine sürükleyip bırakırsan tek mesajı veya işaretlediğin tüm mesajları birlikte taşırsın. Seçili mesajların kendi aralarındaki sıra bozulmaz. **Bu sayfayı seç** (sayfalı liste), **Eşleşenleri seç** (arama sonuçlarının tümü) ve **Tümünü seç** tuşları bulunur. Klavye ile Alt+↑/↓ ve Alt+Home/End de çalışır.
 
 **Önemli:** Bunlar **henüz kuyruğa gönderilmemiş taslakları** sıralar. Gerçek OpenCode kuyruğuna alınmış mesajların sırasını sessizce değiştirmez veya çalışan modele müdahale etmez. Önce taslakları düzenleyip **Tümünü kuyruğa aktar** ile onayla.
+
+## 20 dil desteği — Desktop
+
+Queue Manager panelinin üst kısmındaki **Dil** menüsünden 20 dilden birini seçebilirsin. **OpenCode dilini kullan** seçeneğinde eklenti OpenCode Desktop'ın dilini izler. Manuel seçimin uygulama yeniden açıldığında ve farklı oturumlarda korunur. Arapça ve Farsçada sağdan sola görünüm kullanılır.
+
+Çevrilenler: taslak ve gerçek kuyruk ekranları, toplu seçim, sürükle-bırak, düzenleme düğmeleri, onaylar, maliyet uyarıları ve açılır özellik özeti. **Mesajlarının içeriği otomatik çevrilmez veya değiştirilmez.** Nadir hata iletileri bazı dillerde İngilizceye dönebilir. **TUI'nin ayrı menüsü henüz 20 dilde değildir.**
+
+[20 dilde ayrıntılı özellik açıklamaları](../languages/README.md) · [Çok dilli web rehberi](https://bybrawe.github.io/OpenCode-Queue-Manager/languages.html).
