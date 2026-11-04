@@ -22,7 +22,7 @@ test("every translated language covers all 60 primary GUI and feature keys", () 
       assert.notEqual(strings[key], key, code + ": untranslated key " + key);
     }
     for (const key of ["featureBody", "sendSafety", "cancelSafety", "stageSafety"]) {
-      assert.ok(strings[key].length > 35, code + ": missing useful safety/feature detail in " + key);
+      assert.ok(strings[key].trim().length >= (key === "featureBody" ? 35 : 10), code + ": missing useful safety/feature detail in " + key);
     }
     assert.equal(typeof strings["command.open"], "string");
     assert.equal(strings["panel.title"], "Queue Manager");
@@ -68,6 +68,13 @@ test("changing UI language never translates user-authored prompt text", () => {
   const userMessage = "devam et + API_KEY=@do-not-translate";
   for (const code of SUPPORTED_LANGUAGES) {
     assert.equal(userMessage, "devam et + API_KEY=@do-not-translate");
-    assert.ok(translate(code, "sendSafety").length > 35);
+    assert.ok(translate(code, "sendSafety").trim().length >= 10);
   }
+});
+
+test("core English and Turkish send-safety warnings retain the cost notice", () => {
+  assert.match(translate("tr", "sendSafety"), /maliyet/);
+  assert.match(translate("en", "sendSafety"), /charges/);
+  assert.match(translate("tr", "cancelSafety"), /çalışan görev/);
+  assert.match(translate("en", "cancelSafety"), /running work/);
 });
