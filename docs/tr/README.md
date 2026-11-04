@@ -95,3 +95,8 @@ GitHub'da `main` dalina kod eklendiginde testler ve paket kontrolu calisir; suru
 `opencode v2.0.22` gibi CLI sürümleri güncel kurulum aracı tarafından desteklenir. Yalnızca `npm i @bybrawe/opencode-queue-manager` çalıştırmak OpenCode içinde eklentiyi etkinleştirmez. `npx @bybrawe/opencode-queue-manager@latest install` ile OpenCode'a ekleyin; ardından `npx @bybrawe/opencode-queue-manager@latest doctor` çalıştırın. `doctor`, yapılandırma dosyasının yanında OpenCode'un eklenti listesini de sorgular.
 
 `25 moderate vulnerabilities` gibi npm audit uyarıları çalıştırılan dizindeki **tüm** npm bağımlılıklarını kapsar. Ayrıntı için o dizinde `npm audit` çalıştırılabilir. Kullanıcı klasöründe körlemesine `npm audit fix --force` komutunu çalıştırmayın.
+
+
+## Desktop'ta /qm çıkmıyorsa
+
+Queue Manager, OpenCode v2 Desktop için `@opencode/plugin/gui/vite` ile hazırlanmış deneysel GUI bileşeni barındırır. Yalnızca `npm i` çalıştırmak Desktop'ta komut eklemez. `opencode plugin update @bybrawe/opencode-queue-manager` ile OpenCode'un kayıtlı paketini yenile, Desktop'ı yeniden başlat ve **Ayarlar → Eklentiler → Plugins** bölümünde Queue Manager'ın yüklendiğini ve GUI anahtarının açık olduğunu kontrol et. Oturum açtıktan sonra `/qm`, komut paletinden `Queue Manager` veya yan paneldeki `+` menüsünü kullan. Komut artık oturum yokken de görünür; kullanıldığında önce oturum açmanı ister. Background service / SQLite hatası varsa önce OpenCode servisini onar.

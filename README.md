@@ -190,3 +190,15 @@ export previously caused `Plugin entrypoint not found` in the OpenCode log.
 An installer `doctor` result of `configured: true` means the package is
 **registered**, not that its GUI has successfully loaded. The GUI remains
 experimental and host-dependent.
+
+
+### OpenCode Desktop: why `/qm` may not appear
+
+The experimental Desktop UI must be loaded **by the Desktop app's own background server**. It is not installed or registered by running `npm i` in Windows CMD. The package now builds `./gui-experimental` with the **official OpenCode GUI Vite preset**. The `/qm` palette/slash command is always registered if GUI setup succeeds; the `Queue Manager` launcher is also available in the session panel's `+` menu. Without an active chat session the command shows a notice.
+
+1. Run `opencode plugin update @bybrawe/opencode-queue-manager` to install the newest npm package. Exact version pins need explicit config edits.
+2. Restart Desktop and go to **Settings → Extensions → Plugins**. Make sure the current Desktop server's `@bybrawe/opencode-queue-manager` row is loaded, its GUI switch is on, and use **Reload** after failures.
+3. Open a chat session; type `/qm` or search the command palette for Queue Manager, or use the session panel's `+` launcher.
+4. If Desktop reports `SQLiteError: disk I/O error`, fix the OpenCode background service before debugging the GUI. A running server with a failing database cannot load a GUI plugin.
+
+OpenCode's GUI SDK is **experimental**. Passing our plugin contract tests does not prove compatibility with every Desktop version; inspect the live plugin status if it is missing. [Official Desktop GUI plugin reference](https://opencode.ai/v2/docs/build/plugins/gui).

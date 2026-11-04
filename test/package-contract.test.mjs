@@ -23,8 +23,17 @@ test('npm manifest is publicly publishable with real Desktop and TUI exports', a
   }
 });
 
-test('distributed GUI bundle is generated from the committed source', async () => {
-  assert.equal(await text('dist/gui-experimental.cjs'), await text('src/gui-experimental.cjs'));
+test('Desktop GUI uses the official OpenCode V2 Vite preset', async () => {
+  const manifest = JSON.parse(await text('package.json'));
+  const cfg = await text('vite.config.mjs');
+  const script = await text('scripts/build-gui.mjs');
+  const bundle = await text('dist/gui-experimental.cjs');
+  assert.match(cfg, /@opencode\/plugin\/gui\/vite/);
+  assert.match(cfg, /entry: "src\/gui-experimental\.mjs"/);
+  assert.match(script, /await build\(\)/);
+  assert.ok(manifest.devDependencies.vite && manifest.devDependencies["vite-plugin-solid"]);
+  assert.ok(bundle.length > 200);
+  assert.notEqual(bundle, await text('src/gui-experimental.mjs'));
 });
 
 test('automatic npm release workflow is restricted to main and uses OIDC', async () => {
