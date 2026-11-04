@@ -1,6 +1,6 @@
 {
   "name": "@bybrawe/opencode-queue-manager",
-  "version": "0.3.4",
+  "version": "0.3.5",
   "description": "OpenCode v2 Desktop and TUI prompt queue manager: batch tasks, reorder drafts by drag-and-drop, 20-language Desktop interface and safe plugin installer.",
   "type": "module",
   "license": "MIT",
@@ -63,7 +63,7 @@
   "bin": {
     "opencode-queue-manager": "./bin/opencode-queue-manager.mjs"
   },
-  "releaseCommit": "bcc2183097f39bbc0c8b6f119ced7b4a9148eeaa",
+  "releaseCommit": "fed73d43f42392e553a9a032e1a88f99bbdfe50a",
   "devDependencies": {
     "solid-js": "^1.9.12",
     "vite": "^7.3.7",
