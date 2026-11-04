@@ -9,31 +9,27 @@ import { Plugin, Panel, Command, Style, MenuItem } from "@opencode/plugin/gui";
 import { Schema } from "effect";
 import { createEffect, createMemo, createSignal, onCleanup } from "solid-js";
 import { shiftSelected, moveSelectedToEdge, dropSelected } from "./draft-order.mjs";
+import { LANGUAGE_OPTIONS, MESSAGES, isRtl, resolveLocale, translate } from "./i18n/index.mjs";
 
 const MAX_REPEAT = 500;
 const MAX_DRAFTS = 2000;
 const MAX_IMPORT = 1000;
 const PER_PAGE = 75;
 const DRAFT_SCHEMA = Schema.Struct({ items: Schema.Array(Schema.String) });
-const tr = {
-  title: "Queue Manager",
-  command: "Queue Manager panelini aç",
-};
-
-function assertRepeat(raw) {
-  if (String(raw).trim() === "") throw new Error("Tekrar sayısı boş olamaz.");
+function assertRepeat(raw, t) {
+  if (String(raw).trim() === "") throw new Error(t("error.countEmpty"));
   const n = Number(raw);
-  if (!Number.isSafeInteger(n) || n < 1 || n > MAX_REPEAT) throw new Error(`Tekrar sayısı 1-${MAX_REPEAT} olmalı.`);
+  if (!Number.isSafeInteger(n) || n < 1 || n > MAX_REPEAT) throw new Error(t("error.countRange", { max: MAX_REPEAT }));
   return n;
 }
-function parseLines(raw) {
+function parseLines(raw, t) {
   const lines = String(raw ?? "").replace(/^\uFEFF/, "").split(/\r?\n/).map((s) => s.trim()).filter(Boolean);
-  if (!lines.length) throw new Error("Liste boş. Her satıra bir mesaj yaz.");
-  if (lines.length > MAX_IMPORT) throw new Error(`Bir seferde en fazla ${MAX_IMPORT} satır.`);
+  if (!lines.length) throw new Error(t("error.linesEmpty"));
+  if (lines.length > MAX_IMPORT) throw new Error(t("error.linesMax", { max: MAX_IMPORT }));
   return lines;
 }
-function limitDrafts(next) {
-  if (next.length > MAX_DRAFTS) throw new Error(`Bir oturumda en fazla ${MAX_DRAFTS} taslak tutulabilir.`);
+function limitDrafts(next, t) {
+  if (next.length > MAX_DRAFTS) throw new Error(t("error.draftsMax", { max: MAX_DRAFTS }));
   return next;
 }
 function summary(raw, max = 135) {
@@ -60,7 +56,14 @@ const css = `
 .oqm-root input, .oqm-root textarea, .oqm-root select { color:inherit; background:var(--surface-raised,var(--background-base,#202026)); border:1px solid var(--border-base,#44444c); border-radius:6px; font:inherit; font-size:12px; padding:7px; min-width:0; max-width:100%; }
 .oqm-root input[type=checkbox] { flex:none; accent-color:var(--text-accent,#76b0ff); }
 .oqm-root textarea { display:block; width:100%; min-height:65px; resize:vertical; }
-.oqm-root button { cursor:pointer; color:inherit; background:var(--surface-raised,#2a2a30); border:1px solid var(--border-base,#484852); border-radius:6px; font:inherit; font-size:12px; padding:6px 9px; }
+.oqm-root button { cursor:pointer; color:inherit; background:var(--surface-raised,#2a2a30); border:1px solid var(--border-base,#484852); border-radius:6px; font:inherit; font-size:12px; padding:6px 9px; overflow-wrap:anywhere; }
+.oqm-root[dir="rtl"] { direction:rtl; }
+.oqm-language { justify-content:flex-end; margin:0 0 8px; gap:10px; }
+.oqm-language label { flex:0 1 auto; }
+.oqm-root .oqm-locale { min-width:135px; max-width:215px; flex:1 1 145px; }
+.oqm-feature { margin:0 0 10px; padding:6px 10px; border:1px solid var(--border-base,#414149); border-radius:8px; }
+.oqm-feature summary { cursor:pointer; font-weight:600; font-size:12px; }
+.oqm-feature p { margin:7px 0 4px; line-height:1.6; overflow-wrap:anywhere; }
 .oqm-root button:hover:not(:disabled) { filter:brightness(1.15); }
 .oqm-root button:disabled { opacity:.4; cursor:not-allowed; }
 .oqm-root button.oqm-primary { border-color:var(--text-accent,#6da4ed); }
@@ -114,6 +117,26 @@ function QueueView(ctx, props) {
   // props.session MUST be read reactively: the same panel may stay mounted
   // while the host routes from one session to another.
   const session = () => props.session;
+  // Host IPC-backed global preferences survive restarts and all sessions.
+  const preferences = ctx.storage.store("queue-manager.preferences.v1", {
+    schema: Schema.Struct({ locale: Schema.String }),
+    initial: { locale: "auto" },
+    scope: "global",
+  });
+  const languageChoice = () => {
+    const value = preferences.value?.locale;
+    return LANGUAGE_OPTIONS.some(({ code }) => code === value) ? value : "auto";
+  };
+  const language = () => resolveLocale(languageChoice(), ctx.locale?.locale?.() ?? "tr");
+  const t = (key, params) => translate(language(), key, params);
+  const localized = [];
+  const localize = (node, key, property = "textContent") => {
+    const update = () => { node[property] = t(key); };
+    update();
+    localized.push(update);
+    return node;
+  };
+  const langButton = (key, handler, style) => localize(button(t(key), handler, style), key);
   const draftStore = createMemo(() => ctx.storage.store("queue-manager.drafts.v2", {
     schema: DRAFT_SCHEMA,
     initial: { items: [] },
@@ -133,11 +156,11 @@ function QueueView(ctx, props) {
   let highlightedDrop = null;
   const current = () => [...(draftStore().value?.items ?? [])];
   const save = (rows) => {
-    if (!draftStore().ready()) throw new Error("Taslaklar henüz yüklenmedi; yeniden dene.");
-    draftStore().set({ items: limitDrafts(rows) });
+    if (!draftStore().ready()) throw new Error(t("error.draftsLoading"));
+    draftStore().set({ items: limitDrafts(rows, t) });
   };
   const clearSelection = () => { setSelected([]); setPage(0); };
-  const error = (err) => { setStatus(`Hata: ${errorMessage(err)}`); ctx.toast.show({ title: "Queue Manager hatası", description: errorMessage(err), variant: "error" }); };
+  const error = (err) => { setStatus(`${t("error.prefix")}: ${errorMessage(err)}`); ctx.toast.show({ title: t("error.title"), description: errorMessage(err), variant: "error" }); };
   const notice = (text) => { setStatus(text); ctx.toast.show({ title: "Queue Manager", description: text, variant: "success" }); };
 
   async function refreshInbox(ref = session()) {
@@ -341,10 +364,31 @@ function QueueView(ctx, props) {
   const countLabel = element("span", "oqm-sub");
   heading.append(countLabel);
   root.append(heading);
-  root.append(element("div", "oqm-sub", "Desktop · Oturuma özel taslaklar · Yerel kuyruk"));
+  const languageBar = element("div", "oqm-row oqm-language");
+  const languageLabel = localize(element("label", "oqm-sub"), "language");
+  const languageSelect = element("select", "oqm-locale");
+  languageSelect.setAttribute("aria-label", t("language"));
+  for (const entry of LANGUAGE_OPTIONS) {
+    const option = element("option", "", entry.name);
+    option.value = entry.code;
+    languageSelect.append(option);
+  }
+  languageSelect.value = languageChoice();
+  languageSelect.addEventListener("change", () => {
+    if (!LANGUAGE_OPTIONS.some(({ code }) => code === languageSelect.value)) return;
+    preferences.set({ locale: languageSelect.value });
+  });
+  languageBar.append(languageLabel, languageSelect);
+  root.append(languageBar);
+  root.append(localize(element("div", "oqm-sub"), "subtitle"));
+  const feature = element("details", "oqm-feature");
+  const featureTitle = localize(element("summary"), "featureTitle");
+  const featureBody = localize(element("p", "oqm-sub"), "featureBody");
+  feature.append(featureTitle, featureBody);
+  root.append(feature);
   const tabs = element("div", "oqm-row");
-  const draftTab = button("Taslak liste", () => setSection("draft"), "oqm-tab");
-  const nativeTab = button("Gerçek kuyruk", () => { setSection("native"); void refreshInbox(); }, "oqm-tab");
+  const draftTab = langButton("drafts", () => setSection("draft"), "oqm-tab");
+  const nativeTab = langButton("native", () => { setSection("native"); void refreshInbox(); }, "oqm-tab");
   tabs.append(draftTab, nativeTab); root.append(tabs);
 
   const repeatSection = element("div", "oqm-section");
@@ -520,6 +564,15 @@ function QueueView(ctx, props) {
     });
   });
   createEffect(() => { statusLabel.textContent = status(); });
+  // Follow OpenCode's locale in Auto mode; a user choice overrides it and is persisted.
+  createEffect(() => {
+    const code = language();
+    root.setAttribute("lang", code);
+    root.setAttribute("dir", isRtl(code) ? "rtl" : "ltr");
+    languageSelect.value = languageChoice();
+    languageSelect.setAttribute("aria-label", t("language"));
+    for (const update of localized) update();
+  });
   createEffect(() => {
     const key = session()?.key;
     if (!key) return;
@@ -532,9 +585,9 @@ function QueueView(ctx, props) {
 }
 
 const definition = Plugin.define({
-  i18n: { tr: { "panel.title": tr.title, "command.open": tr.command }, en: { "panel.title": "Queue Manager", "command.open": "Open Queue Manager" } },
+  i18n: MESSAGES,
   setup(ctx) {
-    const tab = { id: "main", get title() { return ctx.t("panel.title"); }, closable: "compact", fallback: true };
+    const tab = { id: "main", get title() { return ctx.t("title"); }, closable: "compact", fallback: true };
     ctx.add(Style, css);
     ctx.add(Panel, {
       id: "main",
@@ -549,8 +602,8 @@ const definition = Plugin.define({
       const session = ctx.sessions.current();
       if (!session) {
         ctx.toast.show({
-          title: ctx.t("panel.title"),
-          description: "Önce bir OpenCode sohbet oturumu aç.",
+          title: ctx.t("title"),
+          description: ctx.t("noSession"),
           variant: "info",
         });
         return;
@@ -559,7 +612,7 @@ const definition = Plugin.define({
     };
     ctx.add(Command, () => ({
       id: "open",
-      title: ctx.t("command.open"),
+      title: ctx.t("open"),
       keywords: "queue manager qm devam et 100 200 sıra liste kuyruk",
       group: "Queue Manager",
       section: "session",
