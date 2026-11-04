@@ -1,0 +1,256 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="index, follow">
+<meta name="color-scheme" content="dark light">
+<title>20 Languages | OpenCode Queue Manager Features and Safety</title>
+<meta name="description" content="Explore OpenCode Queue Manager's Desktop queue manager, drag-and-drop and batch prompt features in 20 languages. Review safe send-to-queue steps and pending queue controls.">
+<link rel="canonical" href="https://bybrawe.github.io/OpenCode-Queue-Manager/languages.html">
+<meta property="og:type" content="website">
+<meta property="og:title" content="OpenCode Queue Manager — 20 languages">
+<meta property="og:url" content="https://bybrawe.github.io/OpenCode-Queue-Manager/languages.html">
+<style>
+:root{color-scheme:dark;font-family:system-ui,-apple-system,Segoe UI,sans-serif}
+*{box-sizing:border-box}body{margin:0;background:#10131a;color:#edf2fa;line-height:1.7}
+a{color:#9dc2ff}main,header,footer{padding:1.5rem clamp(1rem,4vw,3rem);max-width:1150px;margin:auto}
+header{border-bottom:1px solid #334155}.grid{display:flex;flex-wrap:wrap;gap:.6rem;margin:1rem 0 2rem}
+.grid a{border:1px solid #3c506b;background:#1b2534;border-radius:.5rem;padding:.4rem .65rem;text-decoration:none}
+section{margin:2rem 0;padding:1.25rem;background:#192231;border:1px solid #34465b;border-radius:1rem}
+section:target{outline:2px solid #92bfff}section h2{margin:0 0 1rem;font-size:1.4rem}
+.note{border-inline-start:3px solid #e5ad6e;padding-inline-start:.8rem;margin-top:1rem}
+kbd,code{background:#25354b;border-radius:.25rem;padding:.1rem .25rem}
+p{margin:.7rem 0}h1{line-height:1.2}footer{border-top:1px solid #334155}
+</style>
+</head>
+<body id="top">
+<header><a href="./">OpenCode Queue Manager</a> · <a href="https://github.com/ByBrawe/OpenCode-Queue-Manager">Source</a> · <a href="https://www.npmjs.com/package/@bybrawe/opencode-queue-manager">npm</a></header>
+<main>
+<h1>Queue Manager features in 20 languages</h1>
+<p>Select a language in the Desktop Queue Manager panel. Auto follows OpenCode's interface language; your selection persists. Right-to-left layout is available for Arabic and Persian. These descriptions cover the Desktop GUI; TUI localization is separate. Some uncommon diagnostics fall back to English.</p>
+<nav class="grid" aria-label="Language directory"><a href="#tr" lang="tr" dir="ltr">Türkçe</a>
+<a href="#en" lang="en" dir="ltr">English</a>
+<a href="#de" lang="de" dir="ltr">Deutsch</a>
+<a href="#fr" lang="fr" dir="ltr">Français</a>
+<a href="#es" lang="es" dir="ltr">Español</a>
+<a href="#it" lang="it" dir="ltr">Italiano</a>
+<a href="#pt-BR" lang="pt-BR" dir="ltr">Português (Brasil)</a>
+<a href="#ru" lang="ru" dir="ltr">Русский</a>
+<a href="#uk" lang="uk" dir="ltr">Українська</a>
+<a href="#pl" lang="pl" dir="ltr">Polski</a>
+<a href="#nl" lang="nl" dir="ltr">Nederlands</a>
+<a href="#sv" lang="sv" dir="ltr">Svenska</a>
+<a href="#ja" lang="ja" dir="ltr">日本語</a>
+<a href="#ko" lang="ko" dir="ltr">한국어</a>
+<a href="#zh-CN" lang="zh-CN" dir="ltr">简体中文</a>
+<a href="#ar" lang="ar" dir="rtl">العربية</a>
+<a href="#hi" lang="hi" dir="ltr">हिन्दी</a>
+<a href="#id" lang="id" dir="ltr">Bahasa Indonesia</a>
+<a href="#vi" lang="vi" dir="ltr">Tiếng Việt</a>
+<a href="#fa" lang="fa" dir="rtl">فارسی</a></nav>
+<section id="tr" lang="tr" dir="ltr">
+<h2>Türkçe — Queue Manager özellikleri</h2>
+<p>10–500 kez mesaj tekrarla, görevleri yapıştır veya TXT içe aktar, taslakları düzenle ve ara, bir veya birden çok mesajı sürükle-bırak ile sırala, ardından onaylayarak OpenCode kuyruğuna gönder. Bekleyenleri görüntüle/iptal et; çalışan görev etkilenmez.</p>
+<p><strong>Taslak liste:</strong> Aynı mesajı N kez oluştur · Taslağa ekle · ↑ Seçilileri yukarı · ↓ Seçilileri aşağı · Tümünü kuyruğa aktar</p>
+<p><strong>Gerçek kuyruk:</strong> OpenCode&#39;un gerçek bekleyen kuyruğu (çalışan görev ayrı). Göndermeden önce taslakları sırala.</p>
+<p><strong>Dil:</strong> OpenCode dilini kullan</p>
+<p class="note"><strong>⚠ Tümünü kuyruğa aktar:</strong> Gönderim model çalışmasını başlatabilir ve maliyet oluşturabilir. Önce mesajları kontrol et.</p>
+<p class="note"><strong>⚠ Tüm bekleyenleri iptal et:</strong> Yalnızca bekleyen mesajlar iptal edilir; çalışan görev sürer.</p>
+<p><code>/qm</code> · <a href="#top">Önceki</a></p>
+</section>
+<section id="en" lang="en" dir="ltr">
+<h2>English — Queue Manager features</h2>
+<p>Create 10–500 repeated prompts, paste tasks or import TXT, edit and search drafts, reorder one or many messages by drag-and-drop, then explicitly send to the native OpenCode queue. Inspect or cancel pending messages; running tasks stay untouched.</p>
+<p><strong>Draft list:</strong> Repeat a prompt N times · Add to drafts · ↑ Move selected up · ↓ Move selected down · Send all to queue</p>
+<p><strong>Native queue:</strong> OpenCode&#39;s pending queue (running work is separate). Sort drafts before sending.</p>
+<p><strong>Language:</strong> Follow OpenCode</p>
+<p class="note"><strong>⚠ Send all to queue:</strong> Sending can start model work and incur charges. Check the messages first.</p>
+<p class="note"><strong>⚠ Cancel all pending:</strong> Only pending messages will be canceled; running work continues.</p>
+<p><code>/qm</code> · <a href="#top">Previous</a></p>
+</section>
+<section id="de" lang="de" dir="ltr">
+<h2>Deutsch — Funktionen des Queue Managers</h2>
+<p>Nachrichten 10–500 Mal wiederholen, Aufgaben einfügen oder TXT importieren, Entwürfe bearbeiten und durchsuchen, einzelne oder mehrere Einträge per Drag-and-drop sortieren und nach Bestätigung in die OpenCode-Warteschlange senden. Wartende Nachrichten anzeigen oder abbrechen; laufende Aufgaben bleiben unberührt.</p>
+<p><strong>Entwürfe:</strong> Eine Nachricht N-mal wiederholen · Zu Entwürfen hinzufügen · ↑ Auswahl nach oben · ↓ Auswahl nach unten · Alle einreihen</p>
+<p><strong>Echte Warteschlange:</strong> Echte OpenCode-Warteschlange (laufende Aufgaben separat). Entwürfe vor dem Senden sortieren.</p>
+<p><strong>Sprache:</strong> OpenCode-Sprache</p>
+<p class="note"><strong>⚠ Alle einreihen:</strong> Das Senden kann Modellarbeit starten und Kosten verursachen. Bitte vorher prüfen.</p>
+<p class="note"><strong>⚠ Alle wartenden abbrechen:</strong> Nur wartende Nachrichten werden abgebrochen; laufende Arbeit geht weiter.</p>
+<p><code>/qm</code> · <a href="#top">Zurück</a></p>
+</section>
+<section id="fr" lang="fr" dir="ltr">
+<h2>Français — Fonctions de Queue Manager</h2>
+<p>Répétez un message 10 à 500 fois, collez des tâches ou importez un TXT, modifiez et recherchez les brouillons, réordonnez un ou plusieurs messages par glisser-déposer, puis confirmez leur envoi à la file native OpenCode. Consultez ou annulez les messages en attente sans toucher aux tâches actives.</p>
+<p><strong>Brouillons:</strong> Répéter un message N fois · Ajouter aux brouillons · ↑ Monter la sélection · ↓ Descendre la sélection · Tout envoyer à la file</p>
+<p><strong>File réelle:</strong> File d&#39;attente OpenCode (tâches actives à part). Triez les brouillons avant l&#39;envoi.</p>
+<p><strong>Langue:</strong> Langue d’OpenCode</p>
+<p class="note"><strong>⚠ Tout envoyer à la file:</strong> L&#39;envoi peut lancer des tâches du modèle et engendrer des frais. Vérifiez avant.</p>
+<p class="note"><strong>⚠ Annuler tous les éléments en attente:</strong> Seuls les messages en attente seront annulés, pas le travail en cours.</p>
+<p><code>/qm</code> · <a href="#top">Précédent</a></p>
+</section>
+<section id="es" lang="es" dir="ltr">
+<h2>Español — Funciones de Queue Manager</h2>
+<p>Repite mensajes de 10 a 500 veces, pega tareas o importa TXT, edita y busca borradores, reordena uno o varios con arrastrar y soltar y envíalos a la cola nativa de OpenCode tras confirmar. Consulta o cancela pendientes sin afectar las tareas activas.</p>
+<p><strong>Borradores:</strong> Repetir un mensaje N veces · Añadir a borradores · ↑ Subir selección · ↓ Bajar selección · Enviar todo a la cola</p>
+<p><strong>Cola real:</strong> Cola real de OpenCode (las tareas en curso van aparte). Ordena los borradores antes de enviarlos.</p>
+<p><strong>Idioma:</strong> Idioma de OpenCode</p>
+<p class="note"><strong>⚠ Enviar todo a la cola:</strong> El envío puede iniciar tareas del modelo y generar costes. Revisa antes.</p>
+<p class="note"><strong>⚠ Cancelar todos los pendientes:</strong> Solo se cancelan los mensajes pendientes; la tarea activa continúa.</p>
+<p><code>/qm</code> · <a href="#top">Anterior</a></p>
+</section>
+<section id="it" lang="it" dir="ltr">
+<h2>Italiano — Funzionalità di Queue Manager</h2>
+<p>Ripeti messaggi 10–500 volte, incolla attività o importa TXT, modifica e cerca bozze, riordina uno o più messaggi tramite trascinamento e invia alla coda nativa OpenCode dopo conferma. Visualizza o annulla i messaggi in attesa senza interrompere quelli attivi.</p>
+<p><strong>Bozze:</strong> Ripeti un messaggio N volte · Aggiungi alle bozze · ↑ Sposta su · ↓ Sposta giù · Invia tutto in coda</p>
+<p><strong>Coda reale:</strong> Coda reale di OpenCode (lavori in corso separati). Ordina le bozze prima dell&#39;invio.</p>
+<p><strong>Lingua:</strong> Lingua di OpenCode</p>
+<p class="note"><strong>⚠ Invia tutto in coda:</strong> L&#39;invio può avviare il modello e generare costi. Controlla prima.</p>
+<p class="note"><strong>⚠ Annulla tutti in attesa:</strong> Vengono annullati solo i messaggi in attesa; il lavoro attivo continua.</p>
+<p><code>/qm</code> · <a href="#top">Precedente</a></p>
+</section>
+<section id="pt-BR" lang="pt-BR" dir="ltr">
+<h2>Português (Brasil) — Recursos do Queue Manager</h2>
+<p>Repita mensagens 10–500 vezes, cole tarefas ou importe TXT, edite e pesquise rascunhos, reordene uma ou várias mensagens arrastando e solte na fila nativa do OpenCode após confirmar. Veja ou cancele pendentes sem afetar tarefas em execução.</p>
+<p><strong>Rascunhos:</strong> Repetir uma mensagem N vezes · Adicionar aos rascunhos · ↑ Mover para cima · ↓ Mover para baixo · Enviar tudo para a fila</p>
+<p><strong>Fila real:</strong> Fila pendente do OpenCode (trabalho ativo separado). Ordene os rascunhos antes de enviar.</p>
+<p><strong>Idioma:</strong> Idioma do OpenCode</p>
+<p class="note"><strong>⚠ Enviar tudo para a fila:</strong> O envio pode iniciar trabalho do modelo e gerar custos. Revise antes.</p>
+<p class="note"><strong>⚠ Cancelar todos os pendentes:</strong> Somente mensagens pendentes serão canceladas; o trabalho ativo continua.</p>
+<p><code>/qm</code> · <a href="#top">Anterior</a></p>
+</section>
+<section id="ru" lang="ru" dir="ltr">
+<h2>Русский — Возможности Queue Manager</h2>
+<p>Повторяйте сообщения 10–500 раз, вставляйте задачи или импортируйте TXT, редактируйте и ищите черновики, перетаскивайте отдельные или несколько сообщений и после подтверждения отправляйте их в очередь OpenCode. Просматривайте или отменяйте ожидающие сообщения без остановки текущих задач.</p>
+<p><strong>Черновики:</strong> Повторить сообщение N раз · Добавить в черновики · ↑ Поднять выбранное · ↓ Опустить выбранное · Отправить всё в очередь</p>
+<p><strong>Реальная очередь:</strong> Ожидающая очередь OpenCode (текущие задачи отдельно). Сортируйте черновики до отправки.</p>
+<p><strong>Язык:</strong> Язык OpenCode</p>
+<p class="note"><strong>⚠ Отправить всё в очередь:</strong> Отправка может запустить работу модели и привести к расходам. Проверьте заранее.</p>
+<p class="note"><strong>⚠ Отменить все ожидающие:</strong> Отменяются только ожидающие сообщения; текущая работа продолжается.</p>
+<p><code>/qm</code> · <a href="#top">Назад</a></p>
+</section>
+<section id="uk" lang="uk" dir="ltr">
+<h2>Українська — Можливості Queue Manager</h2>
+<p>Повторюйте повідомлення 10–500 разів, вставляйте завдання чи імпортуйте TXT, редагуйте й шукайте чернетки, перетягуйте одне або кілька повідомлень і після підтвердження надсилайте їх у чергу OpenCode. Переглядайте або скасовуйте очікування без зупинки активних завдань.</p>
+<p><strong>Чернетки:</strong> Повторити повідомлення N разів · Додати до чернеток · ↑ Перемістити вище · ↓ Перемістити нижче · Надіслати все в чергу</p>
+<p><strong>Реальна черга:</strong> Черга очікування OpenCode (активні завдання окремо). Упорядкуйте чернетки до надсилання.</p>
+<p><strong>Мова:</strong> Мова OpenCode</p>
+<p class="note"><strong>⚠ Надіслати все в чергу:</strong> Надсилання може запустити роботу моделі й спричинити витрати. Перевірте спершу.</p>
+<p class="note"><strong>⚠ Скасувати всі очікування:</strong> Скасовуються лише очікувані повідомлення; активна робота триває.</p>
+<p><code>/qm</code> · <a href="#top">Назад</a></p>
+</section>
+<section id="pl" lang="pl" dir="ltr">
+<h2>Polski — Funkcje Queue Manager</h2>
+<p>Powtarzaj wiadomości 10–500 razy, wklejaj zadania lub importuj TXT, edytuj i wyszukuj szkice, przeciągaj pojedyncze lub grupy wiadomości, a następnie po zatwierdzeniu wysyłaj do kolejki OpenCode. Przeglądaj i anuluj oczekujące wiadomości bez zatrzymywania aktywnych zadań.</p>
+<p><strong>Szkice:</strong> Powtórz wiadomość N razy · Dodaj do szkiców · ↑ Przesuń w górę · ↓ Przesuń w dół · Wyślij wszystko do kolejki</p>
+<p><strong>Prawdziwa kolejka:</strong> Kolejka oczekujących OpenCode (trwające zadania osobno). Sortuj szkice przed wysłaniem.</p>
+<p><strong>Język:</strong> Język OpenCode</p>
+<p class="note"><strong>⚠ Wyślij wszystko do kolejki:</strong> Wysłanie może uruchomić model i generować koszty. Sprawdź najpierw.</p>
+<p class="note"><strong>⚠ Anuluj wszystkie oczekujące:</strong> Anulowane są tylko oczekujące wiadomości; trwające zadania nadal działają.</p>
+<p><code>/qm</code> · <a href="#top">Poprzednia</a></p>
+</section>
+<section id="nl" lang="nl" dir="ltr">
+<h2>Nederlands — Functies van Queue Manager</h2>
+<p>Herhaal berichten 10–500 keer, plak taken of importeer TXT, bewerk en doorzoek concepten, versleep één of meerdere berichten en stuur ze na bevestiging naar de native OpenCode-wachtrij. Bekijk of annuleer wachtende berichten zonder actieve taken te stoppen.</p>
+<p><strong>Concepten:</strong> Herhaal een bericht N keer · Toevoegen aan concepten · ↑ Selectie omhoog · ↓ Selectie omlaag · Alles naar wachtrij</p>
+<p><strong>Echte wachtrij:</strong> Echte wachtrij van OpenCode (lopende taken apart). Sorteer concepten vóór verzending.</p>
+<p><strong>Taal:</strong> OpenCode-taal</p>
+<p class="note"><strong>⚠ Alles naar wachtrij:</strong> Verzenden kan modelwerk starten en kosten veroorzaken. Controleer vooraf.</p>
+<p class="note"><strong>⚠ Alle wachtenden annuleren:</strong> Alleen wachtende berichten worden geannuleerd; actief werk gaat door.</p>
+<p><code>/qm</code> · <a href="#top">Vorige</a></p>
+</section>
+<section id="sv" lang="sv" dir="ltr">
+<h2>Svenska — Queue Managers funktioner</h2>
+<p>Upprepa meddelanden 10–500 gånger, klistra in uppgifter eller importera TXT, redigera och sök bland utkast, dra enstaka eller flera meddelanden till rätt ordning och skicka till OpenCodes kö efter bekräftelse. Se och avbryt väntande meddelanden utan att störa pågående uppgifter.</p>
+<p><strong>Utkast:</strong> Upprepa ett meddelande N gånger · Lägg till utkast · ↑ Flytta upp · ↓ Flytta ned · Skicka alla till kön</p>
+<p><strong>Verklig kö:</strong> OpenCodes väntande kö (pågående arbete separat). Sortera utkast före sändning.</p>
+<p><strong>Språk:</strong> OpenCodes språk</p>
+<p class="note"><strong>⚠ Skicka alla till kön:</strong> Att skicka kan starta modellarbete och innebära kostnader. Granska först.</p>
+<p class="note"><strong>⚠ Avbryt alla väntande:</strong> Bara väntande meddelanden avbryts; pågående arbete fortsätter.</p>
+<p><code>/qm</code> · <a href="#top">Föregående</a></p>
+</section>
+<section id="ja" lang="ja" dir="ltr">
+<h2>日本語 — Queue Managerの機能</h2>
+<p>メッセージを10〜500回繰り返し、タスクの貼り付けやTXTの読み込み、下書きの編集・検索、単一または複数メッセージのドラッグで順序を変更し、確認後にOpenCodeのキューへ送信できます。実行中の処理を止めずに保留中のメッセージを確認・取り消せます。</p>
+<p><strong>下書き一覧:</strong> メッセージをN回繰り返す · 下書きに追加 · ↑ 選択を上へ · ↓ 選択を下へ · すべてキューへ送信</p>
+<p><strong>実際のキュー:</strong> OpenCodeの保留キュー（実行中の処理とは別）。送信前に下書きを並べ替えてください。</p>
+<p><strong>言語:</strong> OpenCodeの言語</p>
+<p class="note"><strong>⚠ すべてキューへ送信:</strong> 送信するとモデルの処理が始まり料金が発生する場合があります。内容を確認してください。</p>
+<p class="note"><strong>⚠ 保留をすべて取消:</strong> 保留中のメッセージのみ取り消します。実行中の処理は続きます。</p>
+<p><code>/qm</code> · <a href="#top">前へ</a></p>
+</section>
+<section id="ko" lang="ko" dir="ltr">
+<h2>한국어 — Queue Manager 기능</h2>
+<p>메시지를 10~500회 반복하고 작업 목록을 붙여넣거나 TXT를 가져와 초안을 편집·검색하고, 하나 또는 여러 메시지를 끌어 순서를 바꾼 뒤 확인하고 OpenCode 대기열로 전송합니다. 진행 중인 작업은 유지한 채 대기 메시지를 확인하거나 취소할 수 있습니다.</p>
+<p><strong>초안 목록:</strong> 메시지를 N번 반복 · 초안에 추가 · ↑ 선택 항목 위로 · ↓ 선택 항목 아래로 · 모두 대기열로 보내기</p>
+<p><strong>실제 대기열:</strong> OpenCode 대기 메시지 목록(실행 중 작업과 별도). 보내기 전에 초안 순서를 정하세요.</p>
+<p><strong>언어:</strong> OpenCode 언어</p>
+<p class="note"><strong>⚠ 모두 대기열로 보내기:</strong> 전송 시 모델 작업이 시작되어 비용이 발생할 수 있습니다. 먼저 확인하세요.</p>
+<p class="note"><strong>⚠ 모든 대기 메시지 취소:</strong> 대기 메시지만 취소합니다. 실행 중인 작업은 계속됩니다.</p>
+<p><code>/qm</code> · <a href="#top">이전</a></p>
+</section>
+<section id="zh-CN" lang="zh-CN" dir="ltr">
+<h2>简体中文 — Queue Manager 功能</h2>
+<p>将消息重复 10–500 次，粘贴任务或导入 TXT，编辑和搜索草稿，通过拖放调整单条或多条消息的顺序，并在确认后发送到 OpenCode 原生队列。可以查看或取消待处理消息，不会中断运行中的任务。</p>
+<p><strong>草稿列表:</strong> 将消息重复 N 次 · 添加到草稿 · ↑ 上移选中项 · ↓ 下移选中项 · 全部加入队列</p>
+<p><strong>实际队列:</strong> OpenCode 待处理队列（与运行中的任务分开）。请先整理草稿再发送。</p>
+<p><strong>语言:</strong> 跟随 OpenCode</p>
+<p class="note"><strong>⚠ 全部加入队列:</strong> 发送后可能启动模型工作并产生费用，请先检查。</p>
+<p class="note"><strong>⚠ 取消所有待处理消息:</strong> 仅取消待处理消息，不停止正在运行的任务。</p>
+<p><code>/qm</code> · <a href="#top">上一页</a></p>
+</section>
+<section id="ar" lang="ar" dir="rtl">
+<h2>العربية — ميزات Queue Manager</h2>
+<p>كرّر الرسائل من 10 إلى 500 مرة، والصق المهام أو استورد TXT، وعدّل المسودات وابحث فيها، وأعد ترتيب رسالة واحدة أو عدة رسائل بالسحب والإفلات، ثم أرسلها إلى قائمة OpenCode بعد التأكيد. اعرض الرسائل المنتظرة أو ألغها دون إيقاف العمل الجاري.</p>
+<p><strong>المسودات:</strong> تكرار الرسالة N مرة · إضافة إلى المسودات · ↑ رفع المحدد · ↓ خفض المحدد · إرسال الكل إلى قائمة الانتظار</p>
+<p><strong>قائمة الانتظار الفعلية:</strong> قائمة انتظار OpenCode الفعلية (العمل الجاري منفصل). رتّب المسودات قبل الإرسال.</p>
+<p><strong>اللغة:</strong> لغة OpenCode</p>
+<p class="note"><strong>⚠ إرسال الكل إلى قائمة الانتظار:</strong> قد يبدأ الإرسال عمل النموذج وتترتب عليه رسوم. راجع الرسائل أولًا.</p>
+<p class="note"><strong>⚠ إلغاء كل المنتظر:</strong> تُلغى الرسائل المنتظرة فقط؛ يستمر العمل الجاري.</p>
+<p><code>/qm</code> · <a href="#top">السابق</a></p>
+</section>
+<section id="hi" lang="hi" dir="ltr">
+<h2>हिन्दी — Queue Manager की सुविधाएँ</h2>
+<p>संदेशों को 10–500 बार दोहराएँ, कार्य चिपकाएँ या TXT आयात करें, ड्राफ्ट संपादित और खोजें, एक या कई संदेश खींचकर क्रम बदलें, फिर पुष्टि करके OpenCode की मूल कतार में भेजें। चल रहे कार्य को रोके बिना लंबित संदेश देखें या रद्द करें।</p>
+<p><strong>ड्राफ्ट सूची:</strong> संदेश N बार दोहराएँ · ड्राफ्ट में जोड़ें · ↑ चयन ऊपर · ↓ चयन नीचे · सभी को कतार में भेजें</p>
+<p><strong>वास्तविक कतार:</strong> OpenCode की प्रतीक्षारत कतार (चल रहा काम अलग)। भेजने से पहले ड्राफ्ट क्रम बदलें।</p>
+<p><strong>भाषा:</strong> OpenCode की भाषा</p>
+<p class="note"><strong>⚠ सभी को कतार में भेजें:</strong> भेजने से मॉडल का काम शुरू हो सकता है और लागत लग सकती है। पहले जाँचें।</p>
+<p class="note"><strong>⚠ सभी लंबित रद्द करें:</strong> केवल लंबित संदेश रद्द होंगे; चालू काम जारी रहेगा।</p>
+<p><code>/qm</code> · <a href="#top">पिछला</a></p>
+</section>
+<section id="id" lang="id" dir="ltr">
+<h2>Bahasa Indonesia — Fitur Queue Manager</h2>
+<p>Ulangi pesan 10–500 kali, tempel tugas atau impor TXT, edit dan cari draf, atur ulang satu atau banyak pesan dengan seret dan lepas, lalu kirim ke antrean bawaan OpenCode setelah konfirmasi. Lihat atau batalkan pesan menunggu tanpa mengganggu tugas aktif.</p>
+<p><strong>Daftar draf:</strong> Ulangi pesan N kali · Tambah ke draf · ↑ Naikkan pilihan · ↓ Turunkan pilihan · Kirim semua ke antrean</p>
+<p><strong>Antrean nyata:</strong> Antrean menunggu OpenCode (tugas aktif terpisah). Urutkan draf sebelum mengirim.</p>
+<p><strong>Bahasa:</strong> Ikuti bahasa OpenCode</p>
+<p class="note"><strong>⚠ Kirim semua ke antrean:</strong> Mengirim dapat memulai kerja model dan menimbulkan biaya. Periksa dahulu.</p>
+<p class="note"><strong>⚠ Batalkan semua yang menunggu:</strong> Hanya pesan yang menunggu dibatalkan; pekerjaan aktif berlanjut.</p>
+<p><code>/qm</code> · <a href="#top">Sebelumnya</a></p>
+</section>
+<section id="vi" lang="vi" dir="ltr">
+<h2>Tiếng Việt — Tính năng Queue Manager</h2>
+<p>Lặp tin nhắn 10–500 lần, dán tác vụ hoặc nhập TXT, sửa và tìm kiếm bản nháp, kéo thả một hay nhiều tin nhắn để đổi thứ tự rồi xác nhận gửi vào hàng đợi OpenCode. Xem hoặc hủy tin nhắn đang chờ mà không dừng tác vụ đang chạy.</p>
+<p><strong>Danh sách nháp:</strong> Lặp tin nhắn N lần · Thêm vào bản nháp · ↑ Chuyển lên · ↓ Chuyển xuống · Gửi tất cả vào hàng đợi</p>
+<p><strong>Hàng đợi thực:</strong> Hàng đợi đang chờ của OpenCode (tác vụ đang chạy tách riêng). Sắp xếp nháp trước khi gửi.</p>
+<p><strong>Ngôn ngữ:</strong> Theo ngôn ngữ OpenCode</p>
+<p class="note"><strong>⚠ Gửi tất cả vào hàng đợi:</strong> Gửi có thể kích hoạt mô hình và phát sinh phí. Hãy kiểm tra trước.</p>
+<p class="note"><strong>⚠ Hủy mọi mục đang chờ:</strong> Chỉ hủy tin nhắn đang chờ; tác vụ đang chạy vẫn tiếp tục.</p>
+<p><code>/qm</code> · <a href="#top">Trước</a></p>
+</section>
+<section id="fa" lang="fa" dir="rtl">
+<h2>فارسی — امکانات Queue Manager</h2>
+<p>پیام‌ها را ۱۰ تا ۵۰۰ بار تکرار کنید، کارها را جای‌گذاری یا TXT وارد کنید، پیش‌نویس‌ها را ویرایش و جست‌وجو کنید، یک یا چند پیام را با کشیدن مرتب کنید و پس از تأیید به صف OpenCode بفرستید. پیام‌های منتظر را بدون توقف کارهای جاری ببینید یا لغو کنید.</p>
+<p><strong>فهرست پیش‌نویس‌ها:</strong> تکرار پیام N بار · افزودن به پیش‌نویس · ↑ انتقال به بالا · ↓ انتقال به پایین · ارسال همه به صف</p>
+<p><strong>صف واقعی:</strong> صف واقعی OpenCode (کارهای در حال اجرا جدا هستند). پیش‌نویس‌ها را قبل از ارسال مرتب کنید.</p>
+<p><strong>زبان:</strong> زبان OpenCode</p>
+<p class="note"><strong>⚠ ارسال همه به صف:</strong> ارسال ممکن است اجرای مدل را آغاز کند و هزینه داشته باشد. ابتدا بررسی کنید.</p>
+<p class="note"><strong>⚠ لغو همهٔ موارد در انتظار:</strong> فقط پیام‌های منتظر لغو می‌شوند؛ کار جاری ادامه می‌یابد.</p>
+<p><code>/qm</code> · <a href="#top">قبلی</a></p>
+</section>
+<p>Install: <code>opencode plugin add @bybrawe/opencode-queue-manager</code> · Update: <code>opencode plugin update @bybrawe/opencode-queue-manager</code>.</p>
+</main>
+<footer>Independent MIT-licensed community project. The OpenCode Desktop GUI API is experimental and compatibility varies by host version.</footer>
+</body>
+</html>

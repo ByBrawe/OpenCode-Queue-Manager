@@ -9,31 +9,27 @@ import { Plugin, Panel, Command, Style, MenuItem } from "@opencode/plugin/gui";
 import { Schema } from "effect";
 import { createEffect, createMemo, createSignal, onCleanup } from "solid-js";
 import { shiftSelected, moveSelectedToEdge, dropSelected } from "./draft-order.mjs";
+import { LANGUAGE_OPTIONS, MESSAGES, isRtl, resolveLocale, translate } from "./i18n/index.mjs";
 
 const MAX_REPEAT = 500;
 const MAX_DRAFTS = 2000;
 const MAX_IMPORT = 1000;
 const PER_PAGE = 75;
 const DRAFT_SCHEMA = Schema.Struct({ items: Schema.Array(Schema.String) });
-const tr = {
-  title: "Queue Manager",
-  command: "Queue Manager panelini aç",
-};
-
-function assertRepeat(raw) {
-  if (String(raw).trim() === "") throw new Error("Tekrar sayısı boş olamaz.");
+function assertRepeat(raw, t) {
+  if (String(raw).trim() === "") throw new Error(t("error.countEmpty"));
   const n = Number(raw);
-  if (!Number.isSafeInteger(n) || n < 1 || n > MAX_REPEAT) throw new Error(`Tekrar sayısı 1-${MAX_REPEAT} olmalı.`);
+  if (!Number.isSafeInteger(n) || n < 1 || n > MAX_REPEAT) throw new Error(t("error.countRange", { max: MAX_REPEAT }));
   return n;
 }
-function parseLines(raw) {
+function parseLines(raw, t) {
   const lines = String(raw ?? "").replace(/^\uFEFF/, "").split(/\r?\n/).map((s) => s.trim()).filter(Boolean);
-  if (!lines.length) throw new Error("Liste boş. Her satıra bir mesaj yaz.");
-  if (lines.length > MAX_IMPORT) throw new Error(`Bir seferde en fazla ${MAX_IMPORT} satır.`);
+  if (!lines.length) throw new Error(t("error.linesEmpty"));
+  if (lines.length > MAX_IMPORT) throw new Error(t("error.linesMax", { max: MAX_IMPORT }));
   return lines;
 }
-function limitDrafts(next) {
-  if (next.length > MAX_DRAFTS) throw new Error(`Bir oturumda en fazla ${MAX_DRAFTS} taslak tutulabilir.`);
+function limitDrafts(next, t) {
+  if (next.length > MAX_DRAFTS) throw new Error(t("error.draftsMax", { max: MAX_DRAFTS }));
   return next;
 }
 function summary(raw, max = 135) {
@@ -60,7 +56,14 @@ const css = `
 .oqm-root input, .oqm-root textarea, .oqm-root select { color:inherit; background:var(--surface-raised,var(--background-base,#202026)); border:1px solid var(--border-base,#44444c); border-radius:6px; font:inherit; font-size:12px; padding:7px; min-width:0; max-width:100%; }
 .oqm-root input[type=checkbox] { flex:none; accent-color:var(--text-accent,#76b0ff); }
 .oqm-root textarea { display:block; width:100%; min-height:65px; resize:vertical; }
-.oqm-root button { cursor:pointer; color:inherit; background:var(--surface-raised,#2a2a30); border:1px solid var(--border-base,#484852); border-radius:6px; font:inherit; font-size:12px; padding:6px 9px; }
+.oqm-root button { cursor:pointer; color:inherit; background:var(--surface-raised,#2a2a30); border:1px solid var(--border-base,#484852); border-radius:6px; font:inherit; font-size:12px; padding:6px 9px; overflow-wrap:anywhere; }
+.oqm-root[dir="rtl"] { direction:rtl; }
+.oqm-language { justify-content:flex-end; margin:0 0 8px; gap:10px; }
+.oqm-language label { flex:0 1 auto; }
+.oqm-root .oqm-locale { min-width:135px; max-width:215px; flex:1 1 145px; }
+.oqm-feature { margin:0 0 10px; padding:6px 10px; border:1px solid var(--border-base,#414149); border-radius:8px; }
+.oqm-feature summary { cursor:pointer; font-weight:600; font-size:12px; }
+.oqm-feature p { margin:7px 0 4px; line-height:1.6; overflow-wrap:anywhere; }
 .oqm-root button:hover:not(:disabled) { filter:brightness(1.15); }
 .oqm-root button:disabled { opacity:.4; cursor:not-allowed; }
 .oqm-root button.oqm-primary { border-color:var(--text-accent,#6da4ed); }
@@ -114,6 +117,26 @@ function QueueView(ctx, props) {
   // props.session MUST be read reactively: the same panel may stay mounted
   // while the host routes from one session to another.
   const session = () => props.session;
+  // Host IPC-backed global preferences survive restarts and all sessions.
+  const preferences = ctx.storage.store("queue-manager.preferences.v1", {
+    schema: Schema.Struct({ locale: Schema.String }),
+    initial: { locale: "auto" },
+    scope: "global",
+  });
+  const languageChoice = () => {
+    const value = preferences.value?.locale;
+    return LANGUAGE_OPTIONS.some(({ code }) => code === value) ? value : "auto";
+  };
+  const language = () => resolveLocale(languageChoice(), ctx.locale?.locale?.() ?? "tr");
+  const t = (key, params) => translate(language(), key, params);
+  const localized = [];
+  const localize = (node, key, property = "textContent") => {
+    const update = () => { node[property] = t(key); };
+    update();
+    localized.push(update);
+    return node;
+  };
+  const langButton = (key, handler, style) => localize(button(t(key), handler, style), key);
   const draftStore = createMemo(() => ctx.storage.store("queue-manager.drafts.v2", {
     schema: DRAFT_SCHEMA,
     initial: { items: [] },
@@ -133,11 +156,11 @@ function QueueView(ctx, props) {
   let highlightedDrop = null;
   const current = () => [...(draftStore().value?.items ?? [])];
   const save = (rows) => {
-    if (!draftStore().ready()) throw new Error("Taslaklar henüz yüklenmedi; yeniden dene.");
-    draftStore().set({ items: limitDrafts(rows) });
+    if (!draftStore().ready()) throw new Error(t("error.draftsLoading"));
+    draftStore().set({ items: limitDrafts(rows, t) });
   };
   const clearSelection = () => { setSelected([]); setPage(0); };
-  const error = (err) => { setStatus(`Hata: ${errorMessage(err)}`); ctx.toast.show({ title: "Queue Manager hatası", description: errorMessage(err), variant: "error" }); };
+  const error = (err) => { setStatus(`${t("error.prefix")}: ${errorMessage(err)}`); ctx.toast.show({ title: t("error.title"), description: errorMessage(err), variant: "error" }); };
   const notice = (text) => { setStatus(text); ctx.toast.show({ title: "Queue Manager", description: text, variant: "success" }); };
 
   async function refreshInbox(ref = session()) {
@@ -160,23 +183,27 @@ function QueueView(ctx, props) {
   async function stageRepeated() {
     if (busy()) return;
     try {
-      const n = assertRepeat(count.value);
+      const n = assertRepeat(count.value, t);
       const text = content.value.trim();
-      if (!text) throw new Error("Mesaj boş olamaz.");
-      const ok = await ctx.dialogs.confirm({ title: "Mesajları taslağa ekle", description: `${n} adet “${summary(text, 70)}” eklenecek. Henüz AI'ya gönderilmeyecek.`, confirm: "Taslağa ekle" });
+      if (!text) throw new Error(t("error.messageEmpty"));
+      const ok = await ctx.dialogs.confirm({
+        title: t("addDraft"),
+        description: `${n} × “${summary(text, 70)}”. ${t("stageSafety")}`,
+        confirm: t("addDraft"),
+      });
       if (!ok) return;
       save([...current(), ...Array(n).fill(text)]);
       clearSelection();
-      notice(`${n} mesaj taslağa eklendi.`);
+      notice(`${n} ${t("draftWord")} ✓`);
     } catch (err) { error(err); }
   }
   async function addLines(raw) {
     if (busy()) return;
     try {
-      const rows = parseLines(raw);
+      const rows = parseLines(raw, t);
       save([...current(), ...rows]);
       clearSelection();
-      notice(`${rows.length} satır eklendi.`);
+      notice(`${rows.length} ${t("draftWord")} ✓`);
     } catch (err) { error(err); }
   }
   async function runFile(file) {
@@ -190,9 +217,9 @@ function QueueView(ctx, props) {
     const ref = session();
     if (!ref || !rows.length) return;
     const ok = await ctx.dialogs.confirm({
-      title: "Gerçek kuyruğa gönder",
-      description: `${rows.length} mesaj ${ref.id} oturumuna sırayla eklenecek. İşlem başlayabilir ve model maliyeti oluşturabilir.`,
-      confirm: "Kuyruğa aktar",
+      title: t("sendAll"),
+      description: `${rows.length} → ${ref.id}. ${t("sendSafety")}`,
+      confirm: t("sendAll"),
     });
     if (!ok) return;
     setBusy(true);
@@ -200,18 +227,18 @@ function QueueView(ctx, props) {
     try {
       while (sent < rows.length) {
         // Do not accidentally send into a different routed session.
-        if (session()?.key !== ref.key) throw new Error("Oturum değişti; gönderim durduruldu.");
+        if (session()?.key !== ref.key) throw new Error(t("error.sessionChanged"));
         const currentRows = current();
-        if (currentRows[0] !== rows[sent]) throw new Error("Taslak gönderim sırasında değişti; gönderim durduruldu.");
+        if (currentRows[0] !== rows[sent]) throw new Error(t("error.draftsChanged"));
         await ref.server.client.session.prompt({ sessionID: ref.id, text: rows[sent], delivery: "queue" });
         // Checkpoint after acceptance. A hard crash between these two calls may duplicate one item.
         draftStore().set({ items: currentRows.slice(1) });
         sent += 1;
-        if (sent % 10 === 0) setStatus(`${sent}/${rows.length} mesaj kuyruğa eklendi…`);
+        if (sent % 10 === 0) setStatus(`${sent}/${rows.length} ${t("pendingWord")}…`);
       }
       clearSelection();
-      notice(`${sent} mesaj gerçek OpenCode kuyruğuna eklendi.`);
-    } catch (err) { error(new Error(`${sent} mesaj aktarıldı. ${errorMessage(err)}`)); }
+      notice(`${sent} ${t("pendingWord")} ✓`);
+    } catch (err) { error(new Error(`${sent} ${t("pendingWord")}. ${errorMessage(err)}`)); }
     finally { setBusy(false); await refreshInbox(ref); }
   }
 
@@ -219,10 +246,10 @@ function QueueView(ctx, props) {
     if (busy()) return;
     const old = current()[index];
     if (old === undefined) return;
-    const text = await ctx.dialogs.prompt({ title: `#${index + 1} mesajını düzenle`, value: old, submit: "Kaydet" });
+    const text = await ctx.dialogs.prompt({ title: `#${index + 1} · ${t("edit")}`, value: old, submit: t("save") });
     if (!text?.trim()) return;
     const rows = current();
-    if (rows[index] !== old) return error(new Error("Liste değişti; tekrar dene."));
+    if (rows[index] !== old) return error(new Error(t("error.listChanged")));
     rows[index] = text.trim();
     save(rows);
   }
@@ -292,7 +319,7 @@ function QueueView(ctx, props) {
     if (busy() || from.sessionKey !== session()?.key) return;
     const rows = current();
     if (rows.length !== from.rows.length || rows.some((value, i) => value !== from.rows[i])) {
-      error(new Error("Liste sürükleme sırasında değişti. Yeniden dene."));
+      error(new Error(t("error.dragChanged")));
       return;
     }
     commitOrder(dropSelected(rows, from.selection, index, position));
@@ -301,7 +328,10 @@ function QueueView(ctx, props) {
     if (busy()) return;
     const ids = selected();
     if (!ids.length) return;
-    const ok = await ctx.dialogs.confirm({ title: "Taslak mesajları sil", description: `${ids.length} seçili taslak mesajı silinsin mi?`, confirm: "Sil", danger: true });
+    const ok = await ctx.dialogs.confirm({
+      title: t("deleteSelected"), description: `${ids.length}. ${t("deleteSafety")}`,
+      confirm: t("deleteSelected"), danger: true,
+    });
     if (!ok) return;
     const keep = new Set(ids);
     save(current().filter((_, i) => !keep.has(i)));
@@ -309,7 +339,10 @@ function QueueView(ctx, props) {
   }
   async function clearAll() {
     if (busy() || !current().length) return;
-    const ok = await ctx.dialogs.confirm({ title: "Bütün taslakları temizle", description: `${current().length} taslak silinecek. Gerçek kuyruk değişmez.`, confirm: "Taslakları temizle", danger: true });
+    const ok = await ctx.dialogs.confirm({
+      title: t("clearAll"), description: `${current().length}. ${t("clearSafety")}`,
+      confirm: t("clearAll"), danger: true,
+    });
     if (!ok) return;
     save([]); clearSelection();
   }
@@ -320,18 +353,22 @@ function QueueView(ctx, props) {
     const selectedSet = new Set(pendingSelected());
     const items = native().filter((item) => item.type === "user" && item.delivery === "queue" && (all || selectedSet.has(item.id)));
     if (!items.length) return;
-    const ok = await ctx.dialogs.confirm({ title: "Gerçek kuyruğu temizle", description: `${items.length} bekleyen kullanıcı mesajı iptal edilecek. Çalışan görev durdurulmaz.`, confirm: "Mesajları iptal et", danger: true });
+    const ok = await ctx.dialogs.confirm({
+      title: t(all ? "cancelAll" : "cancelSelected"),
+      description: `${items.length}. ${t("cancelSafety")}`,
+      confirm: t(all ? "cancelAll" : "cancelSelected"), danger: true,
+    });
     if (!ok) return;
     setBusy(true);
     let removed = 0;
     try {
       for (const item of items) {
-        if (session()?.key !== ref.key) throw new Error("Oturum değişti.");
+        if (session()?.key !== ref.key) throw new Error(t("error.sessionShort"));
         await ref.server.client.session.inbox.cancel({ sessionID: ref.id, inboxID: item.id });
         removed++;
       }
-      notice(`${removed} bekleyen mesaj için iptal gönderildi.`);
-    } catch (err) { error(new Error(`${removed} mesaj iptal edildi. ${errorMessage(err)}`)); }
+      notice(`${removed} ${t("pendingWord")} ×`);
+    } catch (err) { error(new Error(`${removed} ${t("pendingWord")}. ${errorMessage(err)}`)); }
     finally { setBusy(false); setPendingSelected([]); await refreshInbox(ref); }
   }
 
@@ -341,50 +378,75 @@ function QueueView(ctx, props) {
   const countLabel = element("span", "oqm-sub");
   heading.append(countLabel);
   root.append(heading);
-  root.append(element("div", "oqm-sub", "Desktop · Oturuma özel taslaklar · Yerel kuyruk"));
+  const languageBar = element("div", "oqm-row oqm-language");
+  const languageLabel = localize(element("label", "oqm-sub"), "language");
+  const languageSelect = element("select", "oqm-locale");
+  languageSelect.setAttribute("aria-label", t("language"));
+  for (const entry of LANGUAGE_OPTIONS) {
+    const option = element("option", "", entry.name);
+    option.value = entry.code;
+    languageSelect.append(option);
+  }
+  languageSelect.value = languageChoice();
+  languageSelect.addEventListener("change", () => {
+    if (!LANGUAGE_OPTIONS.some(({ code }) => code === languageSelect.value)) return;
+    preferences.set({ locale: languageSelect.value });
+  });
+  languageBar.append(languageLabel, languageSelect);
+  root.append(languageBar);
+  root.append(localize(element("div", "oqm-sub"), "subtitle"));
+  const feature = element("details", "oqm-feature");
+  const featureTitle = localize(element("summary"), "featureTitle");
+  const featureBody = localize(element("p", "oqm-sub"), "featureBody");
+  feature.append(featureTitle, featureBody);
+  root.append(feature);
   const tabs = element("div", "oqm-row");
-  const draftTab = button("Taslak liste", () => setSection("draft"), "oqm-tab");
-  const nativeTab = button("Gerçek kuyruk", () => { setSection("native"); void refreshInbox(); }, "oqm-tab");
+  const draftTab = langButton("drafts", () => setSection("draft"), "oqm-tab");
+  const nativeTab = langButton("native", () => { setSection("native"); void refreshInbox(); }, "oqm-tab");
   tabs.append(draftTab, nativeTab); root.append(tabs);
 
   const repeatSection = element("div", "oqm-section");
-  repeatSection.append(element("div", "oqm-sub", "Aynı mesajı N kez oluştur"));
+  repeatSection.append(localize(element("div", "oqm-sub"), "repeat"));
   const repeatRow = element("div", "oqm-row");
-  const count = input("number", "Adet", "oqm-number"); count.min = "1"; count.max = "500"; count.step = "1"; count.value = "100"; count.title = "Tekrar sayısı";
+  const count = input("number", "", "oqm-number"); count.min = "1"; count.max = "500"; count.step = "1"; count.value = "100"; localize(count, "count", "title"); localize(count, "count", "ariaLabel");
   repeatRow.append(count);
   for (const n of [10, 25, 50, 100, 200]) repeatRow.append(button(String(n), () => { count.value = String(n); }));
   repeatSection.append(repeatRow);
-  const content = element("textarea"); content.value = "devam et"; content.setAttribute("aria-label", "Tekrarlanacak mesaj");
+  const content = element("textarea"); content.value = t("samplePrompt"); localize(content, "prompt", "ariaLabel");
   repeatSection.append(content);
-  repeatSection.append(button("Taslağa ekle", stageRepeated, "oqm-primary"));
+  repeatSection.append(langButton("addDraft", stageRepeated, "oqm-primary"));
   const pasteSection = element("div", "oqm-section");
-  pasteSection.append(element("div", "oqm-sub", "Alt alta mesaj yapıştır veya TXT dosyası seç (1 satır = 1 mesaj)"));
-  const pasted = element("textarea"); pasted.placeholder = "devam et\nTestleri çalıştır\nHataları düzelt";
-  pasted.setAttribute("aria-label", "Her satıra bir mesaj");
+  pasteSection.append(localize(element("div", "oqm-sub"), "import"));
+  const pasted = element("textarea");
+  const translatedExamples = () => t("exampleLines").split("; ").join("\n");
+  pasted.placeholder = translatedExamples();
+  localized.push(() => { pasted.placeholder = translatedExamples(); });
+  localize(pasted, "import", "ariaLabel");
   pasteSection.append(pasted);
   const pasteActions = element("div", "oqm-row");
-  pasteActions.append(button("Satırları ekle", () => { void addLines(pasted.value); }));
+  pasteActions.append(langButton("addLines", () => { void addLines(pasted.value); }));
   const fileInput = input("file", "", ""); fileInput.accept = ".txt,text/plain"; fileInput.setAttribute("aria-label", "TXT dosyası seç");
+  localize(fileInput, "file", "ariaLabel");
   fileInput.addEventListener("change", () => { void runFile(fileInput.files?.[0]); fileInput.value = ""; });
   pasteActions.append(fileInput); pasteSection.append(pasteActions);
 
   const listSection = element("div", "oqm-section");
   const tools = element("div", "oqm-row");
-  const searchBox = input("search", "Mesajlarda ara", "oqm-search");
+  const searchBox = input("search", "", "oqm-search"); localize(searchBox, "search", "placeholder");
   searchBox.addEventListener("input", () => { setSearch(searchBox.value); setPage(0); });
   tools.append(searchBox);
-  tools.append(button("A-Z", () => { if (!busy()) { save(current().sort((a,b) => a.localeCompare(b, "tr"))); clearSelection(); } }));
-  tools.append(button("Z-A", () => { if (!busy()) { save(current().sort((a,b) => b.localeCompare(a, "tr"))); clearSelection(); } }));
-  tools.append(button("Ters", () => { if (!busy()) { save(current().reverse()); clearSelection(); } }));
+  tools.append(button("A-Z", () => { if (!busy()) { save(current().sort((a,b) => a.localeCompare(b, language()))); clearSelection(); } }));
+  tools.append(button("Z-A", () => { if (!busy()) { save(current().sort((a,b) => b.localeCompare(a, language()))); clearSelection(); } }));
+  tools.append(langButton("reverse", () => { if (!busy()) { save(current().reverse()); clearSelection(); } }));
   listSection.append(tools);
   const selectTools = element("div", "oqm-row");
   const selectCount = element("span", "oqm-sub oqm-flex");
   selectTools.append(selectCount);
-  selectTools.append(button("Eşleşenleri seç", () => {
+  selectTools.append(langButton("selectMatches", () => {
     const indices = current().map((text,i) => ({text,i})).filter(({text}) => text.toLocaleLowerCase("tr").includes(search().toLocaleLowerCase("tr"))).map(({i}) => i);
     setSelected(indices);
   }));
-  selectTools.append(button("Bu sayfayı seç", () => {
+  selectTools.append(langButton("selectPage", () => {
     if (busy()) return;
     const query = search().toLocaleLowerCase("tr");
     const found = current().map((text, index) => ({ text, index })).filter(({text}) => text.toLocaleLowerCase("tr").includes(query));
@@ -393,35 +455,35 @@ function QueueView(ctx, props) {
     const visible = found.slice(offset, offset + PER_PAGE).map(({ index }) => index);
     setSelected((was) => [...new Set([...was, ...visible])]);
   }));
-  selectTools.append(button("Tümünü seç", () => { if (!busy()) setSelected(current().map((_, i) => i)); }));
-  selectTools.append(button("Seçimi kaldır", () => setSelected([])));
-  selectTools.append(button("Seçilileri sil", deleteSelected, "oqm-danger"));
+  selectTools.append(langButton("selectAll", () => { if (!busy()) setSelected(current().map((_, i) => i)); }));
+  selectTools.append(langButton("clearSelection", () => setSelected([])));
+  selectTools.append(langButton("deleteSelected", deleteSelected, "oqm-danger"));
   listSection.append(selectTools);
   const bulk = element("div", "oqm-row oqm-bulk-actions");
   const bulkButtons = [
-    button("↑ Seçilileri yukarı", () => selectedOrder("up")),
-    button("↓ Seçilileri aşağı", () => selectedOrder("down")),
-    button("⇡ Başa", () => selectedOrder("start")),
-    button("⇣ Sona", () => selectedOrder("end")),
+    langButton("moveUp", () => selectedOrder("up")),
+    langButton("moveDown", () => selectedOrder("down")),
+    langButton("moveStart", () => selectedOrder("start")),
+    langButton("moveEnd", () => selectedOrder("end")),
   ];
   bulk.append(...bulkButtons);
   listSection.append(bulk);
-  listSection.append(element("div", "oqm-sub", "☑ Satırları işaretle; ⠿ tutamacından sürükle-bırak ile tekli veya toplu taşı. Klavye: Alt+↑/↓, Alt+Home/End. Değişiklikler yalnızca taslaktadır."));
+  listSection.append(localize(element("div", "oqm-sub"), "dragHelp"));
   const draftList = element("div", "oqm-list"); draftList.setAttribute("role", "list"); listSection.append(draftList);
   const paging = element("div", "oqm-row");
-  paging.append(button("Önceki", () => setPage(Math.max(0, page() - 1))));
+  paging.append(langButton("previous", () => setPage(Math.max(0, page() - 1))));
   const pageLabel = element("span", "oqm-sub oqm-flex"); paging.append(pageLabel);
-  paging.append(button("Sonraki", () => setPage(page() + 1))); listSection.append(paging);
+  paging.append(langButton("next", () => setPage(page() + 1))); listSection.append(paging);
   const bottom = element("div", "oqm-row");
-  bottom.append(button("Bütün taslakları temizle", clearAll, "oqm-danger"));
-  bottom.append(button("Tümünü kuyruğa aktar", publish, "oqm-primary")); listSection.append(bottom);
+  bottom.append(langButton("clearAll", clearAll, "oqm-danger"));
+  bottom.append(langButton("sendAll", publish, "oqm-primary")); listSection.append(bottom);
 
   const nativeSection = element("div", "oqm-section");
-  nativeSection.append(element("div", "oqm-sub", "OpenCode'un gerçek bekleyen kuyruğu (çalışan görev ayrı). Burada sıralama değiştirilmez; taslakta sırala, sonra kuyruğa gönder."));
+  nativeSection.append(localize(element("div", "oqm-sub"), "nativeHelp"));
   const nativeActions = element("div", "oqm-row");
-  nativeActions.append(button("Yenile", () => refreshInbox()));
-  nativeActions.append(button("Seçili mesajları iptal et", () => cancelNative(false), "oqm-danger"));
-  nativeActions.append(button("Tüm bekleyenleri iptal et", () => cancelNative(true), "oqm-danger"));
+  nativeActions.append(langButton("refresh", () => refreshInbox()));
+  nativeActions.append(langButton("cancelSelected", () => cancelNative(false), "oqm-danger"));
+  nativeActions.append(langButton("cancelAll", () => cancelNative(true), "oqm-danger"));
   nativeSection.append(nativeActions);
   const nativeList = element("div", "oqm-list"); nativeSection.append(nativeList);
 
@@ -447,13 +509,13 @@ function QueueView(ctx, props) {
     const visible = all.slice(pageIndex * PER_PAGE, (pageIndex + 1) * PER_PAGE);
     const chosen = new Set(selected());
     const isBusy = busy();
-    countLabel.textContent = `${rows.length} taslak / ${native().length} bekleyen`;
-    selectCount.textContent = `${chosen.size} seçili / ${all.length} eşleşen`;
+    countLabel.textContent = `${rows.length} ${t("draftWord")} / ${native().length} ${t("pendingWord")}`;
+    selectCount.textContent = `${chosen.size} ${t("selectedWord")} / ${all.length} ${t("matchedWord")}`;
     for (const action of bulkButtons) action.disabled = isBusy || chosen.size === 0;
-    pageLabel.textContent = `${pageIndex + 1}/${pages} sayfa`;
+    pageLabel.textContent = `${pageIndex + 1}/${pages} ${t("pageWord")}`;
     wipe(draftList);
-    if (!draftStore().ready()) draftList.append(element("div", "oqm-item oqm-muted", "Taslaklar yükleniyor…"));
-    else if (!visible.length) draftList.append(element("div", "oqm-item oqm-muted", "Mesaj bulunamadı."));
+    if (!draftStore().ready()) draftList.append(element("div", "oqm-item oqm-muted", t("loadingDraft")));
+    else if (!visible.length) draftList.append(element("div", "oqm-item oqm-muted", t("emptyDraft")));
     for (const row of visible) {
       const item = element("div", "oqm-item");
       item.setAttribute("role", "listitem");
@@ -462,11 +524,11 @@ function QueueView(ctx, props) {
       item.addEventListener("drop", (event) => dropOn(event, row.index, item));
       item.addEventListener("dragleave", () => { if (highlightedDrop === item) clearDropMarker(); });
       const check = input("checkbox", "", ""); check.checked = chosen.has(row.index); check.disabled = isBusy;
-      check.setAttribute("aria-label", `#${row.index + 1} seç`);
+      check.setAttribute("aria-label", `#${row.index + 1} ${t("selectedWord")}`);
       check.addEventListener("change", () => setSelected((was) => check.checked ? [...new Set([...was,row.index])] : was.filter((i) => i !== row.index)));
       const handle = button("⠿", () => {}, "oqm-drag-handle");
-      handle.title = "Sürükleyip başka sıraya bırak (işaretli satırları birlikte taşır)";
-      handle.setAttribute("aria-label", `#${row.index + 1} taşı: sürükle-bırak veya Alt+ok tuşları`);
+      handle.title = t("dragHelp");
+      handle.setAttribute("aria-label", `#${row.index + 1} ${t("drag")}: Alt+↑/↓/Home/End`);
       handle.draggable = !isBusy;
       handle.disabled = isBusy;
       handle.addEventListener("dragstart", (event) => prepareDrag(event, row.index));
@@ -486,17 +548,17 @@ function QueueView(ctx, props) {
       item.append(check, handle, element("span", "oqm-index", String(row.index + 1).padStart(3,"0")));
       const msg = element("div", "oqm-content", summary(row.text, 600)); item.append(msg);
       const actions = element("div", "oqm-row");
-      const up = button("↑", () => reorder(row.index, row.index - 1)); up.title = "Yukarı taşı"; up.disabled = isBusy || row.index === 0;
-      const down = button("↓", () => reorder(row.index, row.index + 1)); down.title = "Aşağı taşı"; down.disabled = isBusy || row.index === rows.length - 1;
-      const editBtn = button("Düzenle", () => edit(row.index)); editBtn.disabled = isBusy;
+      const up = button("↑", () => reorder(row.index, row.index - 1)); up.title = t("singleUp"); up.disabled = isBusy || row.index === 0;
+      const down = button("↓", () => reorder(row.index, row.index + 1)); down.title = t("singleDown"); down.disabled = isBusy || row.index === rows.length - 1;
+      const editBtn = button(t("edit"), () => edit(row.index)); editBtn.disabled = isBusy;
       const duplicate = button("+", () => {
         if (busy()) return;
         const now = current();
         now.splice(row.index + 1, 0, row.text);
         try { save(now); clearSelection(); } catch(err) { error(err); }
-      }); duplicate.title = "Kopyala"; duplicate.disabled = isBusy;
-      const top = button("⇡", () => reorder(row.index, 0)); top.title = "En başa taşı"; top.disabled = isBusy || row.index === 0;
-      const end = button("⇣", () => reorder(row.index, rows.length - 1)); end.title = "En sona taşı"; end.disabled = isBusy || row.index === rows.length - 1;
+      }); duplicate.title = t("duplicate"); duplicate.disabled = isBusy;
+      const top = button("⇡", () => reorder(row.index, 0)); top.title = t("singleTop"); top.disabled = isBusy || row.index === 0;
+      const end = button("⇣", () => reorder(row.index, rows.length - 1)); end.title = t("singleEnd"); end.disabled = isBusy || row.index === rows.length - 1;
       actions.append(up, down, top, end, editBtn, duplicate); item.append(actions); draftList.append(item);
     }
   });
@@ -504,13 +566,13 @@ function QueueView(ctx, props) {
     const rows = native(); const chosen = new Set(pendingSelected());
     const isBusy = busy();
     wipe(nativeList);
-    if (loading() && !rows.length) nativeList.append(element("div", "oqm-item oqm-muted", "Kuyruk yükleniyor…"));
-    else if (!rows.length) nativeList.append(element("div", "oqm-item oqm-muted", "Bekleyen mesaj yok."));
+    if (loading() && !rows.length) nativeList.append(element("div", "oqm-item oqm-muted", t("loadingNative")));
+    else if (!rows.length) nativeList.append(element("div", "oqm-item oqm-muted", t("emptyNative")));
     rows.forEach((row, i) => {
       const item = element("div", "oqm-item");
       if (row.type === "user" && row.delivery === "queue") {
         const check = input("checkbox", "", ""); check.checked = chosen.has(row.id); check.disabled = isBusy;
-        check.setAttribute("aria-label", `Gerçek kuyruk #${i + 1} seç`);
+        check.setAttribute("aria-label", `${t("native")} #${i + 1} ${t("selectedWord")}`);
         check.addEventListener("change", () => setPendingSelected((was) => check.checked ? [...new Set([...was, row.id])] : was.filter((id) => id !== row.id)));
         item.append(check);
       }
@@ -520,6 +582,15 @@ function QueueView(ctx, props) {
     });
   });
   createEffect(() => { statusLabel.textContent = status(); });
+  // Follow OpenCode's locale in Auto mode; a user choice overrides it and is persisted.
+  createEffect(() => {
+    const code = language();
+    root.setAttribute("lang", code);
+    root.setAttribute("dir", isRtl(code) ? "rtl" : "ltr");
+    languageSelect.value = languageChoice();
+    languageSelect.setAttribute("aria-label", t("language"));
+    for (const update of localized) update();
+  });
   createEffect(() => {
     const key = session()?.key;
     if (!key) return;
@@ -532,7 +603,7 @@ function QueueView(ctx, props) {
 }
 
 const definition = Plugin.define({
-  i18n: { tr: { "panel.title": tr.title, "command.open": tr.command }, en: { "panel.title": "Queue Manager", "command.open": "Open Queue Manager" } },
+  i18n: MESSAGES,
   setup(ctx) {
     const tab = { id: "main", get title() { return ctx.t("panel.title"); }, closable: "compact", fallback: true };
     ctx.add(Style, css);
@@ -550,7 +621,7 @@ const definition = Plugin.define({
       if (!session) {
         ctx.toast.show({
           title: ctx.t("panel.title"),
-          description: "Önce bir OpenCode sohbet oturumu aç.",
+          description: ctx.t("noSession"),
           variant: "info",
         });
         return;

@@ -16,7 +16,7 @@ See the [official commands reference](https://opencode.ai/v2/docs/cli/commands) 
 
 ## Automatic plugin installer
 
-After version 0.3.0 has been manually published:
+The installer is published on npm and updates are released automatically through GitHub Actions:
 
 ```sh
 npx @bybrawe/opencode-queue-manager install
@@ -105,3 +105,9 @@ the background service is a host database/locked-process issue, not a
 Queue Manager plugin load error. Stop or restart the stuck OpenCode service
 before touching any database files. Never delete `opencode.db`, `-wal` or
 `-shm` without a verified full backup of the entire database set.
+
+## Desktop language selection
+
+Once the plugin is loaded inside OpenCode v2 Desktop, open `/qm` and choose one of 20 languages from the **Language / 🌐** dropdown near the top of the panel. **Auto** follows the application's interface locale. The override is saved in the plugin's own global preference store and persists across sessions; it does not modify existing drafts or queued messages. Arabic and Persian use right-to-left layout. Low-frequency diagnostics may fall back to English. TUI localization is separate.
+
+[20-language feature guide](../languages/README.md) · [Localized web guide](https://bybrawe.github.io/OpenCode-Queue-Manager/languages.html).
