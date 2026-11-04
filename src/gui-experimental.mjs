@@ -1,17 +1,13 @@
 /**
  * OpenCode v2 Desktop GUI Queue Manager.
- * Single-file CommonJS GUI bundle: uses ONLY modules supplied by the Desktop host.
- * No external CDN, eval, embedded browser or unapproved native APIs.
- *
- * This is intentionally plain JavaScript instead of JSX so the release archive
- * can contain a prebuilt GUI without requiring npm or Vite on the user's PC.
- * It follows the documented GUI plugin contract (Plugin/Panel/Command/Style).
+ * Source entry for the official @opencode/plugin/gui/vite preset.
+ * Vite emits one CommonJS bundle in dist/gui-experimental.cjs.
+ * The Desktop host provides the shared GUI SDK, Effect and Solid runtime.
+ * The npm consumer does not need Vite or any GUI build dependencies.
  */
-"use strict";
-
-const { Plugin, Panel, Command, Style } = require("@opencode/plugin/gui");
-const { Schema } = require("effect");
-const { createEffect, createMemo, createSignal, onCleanup } = require("solid-js");
+import { Plugin, Panel, Command, Style, MenuItem } from "@opencode/plugin/gui";
+import { Schema } from "effect";
+import { createEffect, createMemo, createSignal, onCleanup } from "solid-js";
 
 const MAX_REPEAT = 500;
 const MAX_DRAFTS = 2000;
@@ -429,20 +425,43 @@ const definition = Plugin.define({
       list: (input) => input.open.includes("main") ? [tab] : [],
       render: (props) => QueueView(ctx, props),
     });
+    // Keep the launcher visible even before the first session is selected.
+    // An "enabled: false" command disappears from both palette and / menu.
+    const openManager = () => {
+      const session = ctx.sessions.current();
+      if (!session) {
+        ctx.toast.show({
+          title: ctx.t("panel.title"),
+          description: "Önce bir OpenCode sohbet oturumu aç.",
+          variant: "info",
+        });
+        return;
+      }
+      ctx.layout.open(`${ctx.id}:main`, session);
+    };
     ctx.add(Command, () => ({
       id: "open",
       title: ctx.t("command.open"),
-      keywords: "queue manager devam et 100 200 sıra liste kuyruk",
+      keywords: "queue manager qm devam et 100 200 sıra liste kuyruk",
       group: "Queue Manager",
       section: "session",
       slash: { name: "qm" },
-      enabled: !!ctx.sessions.current(),
-      run: () => {
-        const session = ctx.sessions.current();
-        if (session) ctx.layout.open(`${ctx.id}:main`, session, { tab: "select" });
-      },
+      featured: true,
+      run: openManager,
     }));
+    ctx.add(MenuItem, () => {
+      const session = ctx.sessions.current();
+      return {
+        menu: "session.panel",
+        id: "open",
+        title: ctx.t("panel.title"),
+        icon: "list-ordered",
+        keybind: `${ctx.id}.open`,
+        opened: !!session && ctx.layout.state(`${ctx.id}:main`, session) !== "closed",
+        run: openManager,
+      };
+    });
   },
 });
 
-module.exports = { default: definition };
+export default definition;

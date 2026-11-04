@@ -2,6 +2,10 @@
 
 ## Next patch (automatically published)
 
+- Built Desktop GUI using the official OpenCode V2 `@opencode/plugin/gui/vite` preset instead of copying a raw CommonJS source file.
+- Always register the `/qm` Desktop command (including before a session is chosen), with an explanatory no-session notice, and add a Queue Manager `session.panel` menu launcher.
+- Added a Desktop GUI bundle contract smoke test covering the default export, `/qm` and panel registration, based on native V2 plugin patterns.
+
 - Fixed missing OpenCode v2 root entrypoint: new no-op server plugin at `src/index.mjs` and `exports["."]`; prevents `Plugin entrypoint not found` while keeping Desktop and TUI exports separate.
 - Added package-root contract test and documented why `configured: true` does not guarantee that experimental Desktop GUI loaded.
 
