@@ -388,7 +388,8 @@ function QueueView(ctx, props) {
     if (busy()) return;
     const query = search().toLocaleLowerCase("tr");
     const found = current().map((text, index) => ({ text, index })).filter(({text}) => text.toLocaleLowerCase("tr").includes(query));
-    const offset = page() * PER_PAGE;
+    const lastPage = Math.max(0, Math.ceil(found.length / PER_PAGE) - 1);
+    const offset = Math.max(0, Math.min(page(), lastPage)) * PER_PAGE;
     const visible = found.slice(offset, offset + PER_PAGE).map(({ index }) => index);
     setSelected((was) => [...new Set([...was, ...visible])]);
   }));
