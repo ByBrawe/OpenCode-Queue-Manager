@@ -4,7 +4,7 @@
 
 [![npm](https://img.shields.io/npm/v/%40bybrawe%2Fopencode-queue-manager?label=npm)](https://www.npmjs.com/package/@bybrawe/opencode-queue-manager) [![CI](https://github.com/ByBrawe/OpenCode-Queue-Manager/actions/workflows/ci.yml/badge.svg)](https://github.com/ByBrawe/OpenCode-Queue-Manager/actions/workflows/ci.yml) [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 
-[**Türkçe rehber**](docs/tr/README.md) · [Installation](#installation) · [Examples](#examples) · [FAQ](#faq) · [Roadmap](#other-platforms-and-model-providers)
+[**Türkçe rehber**](docs/tr/README.md) · [**20-language guide**](docs/languages/README.md) · [Installation](#installation) · [Examples](#examples) · [FAQ](#faq) · [Roadmap](#other-platforms-and-model-providers)
 
 > **Experimental:** OpenCode v2's Desktop GUI plugin SDK changes between releases. Automated mock tests pass, but actual OpenCode Desktop/TUI compatibility still requires testing. The installer is included in source v0.3.0 and becomes available on npm after the automatic release workflow successfully publishes v0.3.0 (or later). Published versions are listed at [npm](https://www.npmjs.com/package/@bybrawe/opencode-queue-manager).
 
@@ -20,6 +20,7 @@
 | Send to native OpenCode queue | Yes | Yes |
 | Inspect/remove queued pending prompts | Yes | Yes |
 | Install/uninstall CLI helper (Windows/macOS/Linux) | Terminal helper | Terminal helper |
+| 20-language interface, automatic host locale, manual language picker, RTL | Yes | No (English TUI) |
 
 Publishing drafts to OpenCode **starts real model work and may incur usage charges**. The word “publish” in the UI means *send to the OpenCode message queue*, not publish this package to npm. Editing/reordering applies to drafts, not already queued messages.
 
@@ -213,3 +214,13 @@ Within the **draft list** (before sending to OpenCode):
 - **Bu sayfayı seç** selects the current page, **Eşleşenleri seç** selects filtered matches across pages, and **Tümünü seç** selects all drafts. Selections persist across pages. **Seçimi kaldır** clears them.
 - The drag handle supports **Alt+ArrowUp / Alt+ArrowDown / Alt+Home / Alt+End** for accessible keyboard reordering. Each row still offers single-message move buttons.
 - Reordering changes **only local drafts** and doesn't invoke a model or alter already accepted native inbox messages. Sort and review drafts, then explicitly confirm **Tümünü kuyruğa aktar**. Already running/admitted queue items cannot safely be reordered with OpenCode's published Inbox API; queued items can be listed or canceled separately.
+
+## Localization: 20 languages (Desktop)
+
+Open Queue Manager with `/qm`. Select a language from the panel's **Language / Dil / 🌐** dropdown. The **Auto** option follows OpenCode Desktop's interface language; picking a language overrides it. Your selection is **remembered globally**, including after restarting Desktop. It does **not** translate or modify user-authored prompts, queued messages, or saved drafts.
+
+Supported languages: **Turkish, English, German, French, Spanish, Italian, Portuguese (Brazil), Russian, Ukrainian, Polish, Dutch, Swedish, Japanese, Korean, Simplified Chinese, Arabic, Hindi, Indonesian, Vietnamese and Persian**. Arabic and Persian use right-to-left panel direction.
+
+Localized: menu labels, list controls, batch/drag-and-drop instructions, confirmations and cost/safety warnings, plus the expandable **feature overview** in the panel. Common uncommon error diagnostics fall back to English for languages other than English/Turkish. The **TUI is not yet fully translated**; this release's 20-language selector applies to the Desktop GUI.
+
+Read the [**20-language feature descriptions and safety notes**](docs/languages/README.md), or the [searchable HTML language page](https://bybrawe.github.io/OpenCode-Queue-Manager/languages.html). Community corrections and improvements are welcome.
