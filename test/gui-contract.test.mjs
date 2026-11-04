@@ -69,7 +69,7 @@ function harness({ throwAt = Infinity, inbox = [] } = {}) {
     toast: {show:(input)=>{events.toasts.push(input); return {dismiss:()=>{}};}},
   };
   definition.setup(ctx);
-  return { session, ctx, definition, added, Panel, Command, Style, events, store, root:()=>added.get(Panel).render({session}), refresh:()=>effects[1](), // re-run the reactive draft-list render, not the session-change reset effect inbox:(next)=>{inbox=next;} };
+  return { session, ctx, definition, added, Panel, Command, Style, events, store, root:()=>added.get(Panel).render({session}), refresh:()=>effects[1](), /* run only the draft render, not the session-reset effect */ inbox:(next)=>{inbox=next;} };
 }
 
 function click(root,text) {
