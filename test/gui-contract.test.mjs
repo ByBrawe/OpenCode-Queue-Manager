@@ -228,3 +228,30 @@ test('Select current page, select all, and select filtered matches keep draft da
   click(root,'↑ Seçilileri yukarı'); h.refresh();
   assert.deepEqual(Array.from(h.store.value.items), ['alpha','beta','alpha','gamma']);
 });
+
+test('bulk selection spans 75-item pages and filtered matches preserve list order', () => {
+  const h = harness();
+  const root = h.root();
+  const messages = Array.from({ length: 80 }, (_, i) =>
+    [2, 47, 79].includes(i) ? 'special #' + i : 'message #' + i);
+  pasteMessages(root, messages, h);
+  click(root, 'Bu sayfayı seç');
+  h.refresh();
+  assert.ok(root.find((node) => node.tagName === 'span'
+    && node.textContent.startsWith('75 seçili')));
+  click(root, 'Sonraki'); h.refresh();
+  click(root, 'Bu sayfayı seç'); h.refresh();
+  assert.ok(root.find((node) => node.tagName === 'span'
+    && node.textContent.startsWith('80 seçili')));
+  click(root, 'Seçimi kaldır'); h.refresh();
+  const search = root.find((node) => node.tagName === 'input' && node.type === 'search');
+  search.value = 'special';
+  search.fire('input'); h.refresh();
+  click(root, 'Eşleşenleri seç'); h.refresh();
+  assert.ok(root.find((node) => node.tagName === 'span'
+    && node.textContent.startsWith('3 seçili')));
+  click(root, '⇡ Başa'); h.refresh();
+  assert.deepEqual(Array.from(h.store.value.items).slice(0, 3), ['special #2', 'special #47', 'special #79']);
+  assert.equal(search.value, '', 'search is cleared so the new positions remain visible');
+  assert.equal(h.events.prompts.length, 0);
+});
